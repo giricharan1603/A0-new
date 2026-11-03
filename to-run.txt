@@ -1,0 +1,15 @@
+for web Applicatoin view
+.\.venv\Scripts\streamlit.exe run app.py
+
+To run single routes via CLI
+.\.venv\Scripts\python.exe main.py --start MAIN_GATE --goal CSE_BLOCK
+
+To test stair avoidance:
+.\.venv\Scripts\python.exe main.py --start MAIN_GATE --goal CSE_BLOCK --avoid-stairs
+
+To test BenchMark
+.\.venv\Scripts\python.exe main.py --benchmark
+
+
+For unit test
+.\.venv\Scripts\pytest.exe -v

@@ -1,0 +1,517 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d8" for="edge" attr.name="oneway" attr.type="boolean" />
+  <key id="d7" for="edge" attr.name="name" attr.type="string" />
+  <key id="d6" for="edge" attr.name="wheelchair" attr.type="boolean" />
+  <key id="d5" for="edge" attr.name="stairs" attr.type="boolean" />
+  <key id="d4" for="edge" attr.name="highway" attr.type="string" />
+  <key id="d3" for="edge" attr.name="length" attr.type="double" />
+  <key id="d2" for="node" attr.name="name" attr.type="string" />
+  <key id="d1" for="node" attr.name="x" attr.type="double" />
+  <key id="d0" for="node" attr.name="y" attr.type="double" />
+  <graph edgedefault="directed">
+    <node id="n_gate">
+      <data key="d0">13.6281</data>
+      <data key="d1">78.5015</data>
+      <data key="d2">Main Entrance Gate</data>
+    </node>
+    <node id="n_sec">
+      <data key="d0">13.6284</data>
+      <data key="d1">78.5017</data>
+      <data key="d2">Security Post &amp; Entry Plaza</data>
+    </node>
+    <node id="n_admin">
+      <data key="d0">13.6291</data>
+      <data key="d1">78.5019</data>
+      <data key="d2">Administrative Block</data>
+    </node>
+    <node id="n_quad">
+      <data key="d0">13.6289</data>
+      <data key="d1">78.5021</data>
+      <data key="d2">Central Quadrangle</data>
+    </node>
+    <node id="n_lib">
+      <data key="d0">13.62885</data>
+      <data key="d1">78.50245</data>
+      <data key="d2">Central Library</data>
+    </node>
+    <node id="n_audi">
+      <data key="d0">13.6293</data>
+      <data key="d1">78.5023</data>
+      <data key="d2">Central Auditorium</data>
+    </node>
+    <node id="n_cse">
+      <data key="d0">13.6298</data>
+      <data key="d1">78.5028</data>
+      <data key="d2">CSE &amp; AI Block</data>
+    </node>
+    <node id="n_ece">
+      <data key="d0">13.6294</data>
+      <data key="d1">78.5034</data>
+      <data key="d2">ECE &amp; EEE Block</data>
+    </node>
+    <node id="n_mech">
+      <data key="d0">13.6285</data>
+      <data key="d1">78.5038</data>
+      <data key="d2">Mech &amp; Workshop Block</data>
+    </node>
+    <node id="n_canteen">
+      <data key="d0">13.6289</data>
+      <data key="d1">78.5042</data>
+      <data key="d2">Food Court &amp; Canteen</data>
+    </node>
+    <node id="n_sports">
+      <data key="d0">13.6305</data>
+      <data key="d1">78.5036</data>
+      <data key="d2">Indoor Sports Complex</data>
+    </node>
+    <node id="n_ground">
+      <data key="d0">13.6311</data>
+      <data key="d1">78.5042</data>
+      <data key="d2">Main Athletic Ground</data>
+    </node>
+    <node id="n_boys_h">
+      <data key="d0">13.6312</data>
+      <data key="d1">78.5022</data>
+      <data key="d2">Men's Hostel</data>
+    </node>
+    <node id="n_girls_h">
+      <data key="d0">13.6302</data>
+      <data key="d1">78.5014</data>
+      <data key="d2">Women's Hostel</data>
+    </node>
+    <node id="n_innov">
+      <data key="d0">13.6299</data>
+      <data key="d1">78.5048</data>
+      <data key="d2">Incubation &amp; R&amp;D Hub</data>
+    </node>
+    <node id="j_north">
+      <data key="d0">13.6303</data>
+      <data key="d1">78.5025</data>
+      <data key="d2">North Academic Junction</data>
+    </node>
+    <node id="j_east">
+      <data key="d0">13.6291</data>
+      <data key="d1">78.5031</data>
+      <data key="d2">East Academic Walkway</data>
+    </node>
+    <node id="j_ring_e">
+      <data key="d0">13.6297</data>
+      <data key="d1">78.5043</data>
+      <data key="d2">East Ring Road Waypoint</data>
+    </node>
+    <node id="j_west">
+      <data key="d0">13.6296</data>
+      <data key="d1">78.5017</data>
+      <data key="d2">West Campus Avenue</data>
+    </node>
+    <edge source="n_gate" target="n_sec">
+      <data key="d3">39.74799545743959</data>
+      <data key="d4">primary</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Main Entrance Boulevard</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_sec" target="n_gate">
+      <data key="d3">39.74799545743959</data>
+      <data key="d4">primary</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Main Entrance Boulevard</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_sec" target="n_quad">
+      <data key="d3">70.42394449300869</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Central Boulevard</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_sec" target="n_admin">
+      <data key="d3">80.781345933628</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin Approach Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_admin" target="n_sec">
+      <data key="d3">80.781345933628</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin Approach Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_admin" target="n_quad">
+      <data key="d3">31.01103984505507</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin-Quad Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_admin" target="j_west">
+      <data key="d3">59.65055463321874</data>
+      <data key="d4">service</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">West Campus Lane</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_admin" target="n_gate">
+      <data key="d3">119.30115897299923</data>
+      <data key="d4">service</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin Exit One-Way Lane</data>
+      <data key="d8">True</data>
+    </edge>
+    <edge source="n_quad" target="n_sec">
+      <data key="d3">70.42394449300869</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Central Boulevard</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_quad" target="n_admin">
+      <data key="d3">31.01103984505507</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin-Quad Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_quad" target="n_lib">
+      <data key="d3">38.22882645273961</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library Courtyard Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_quad" target="n_audi">
+      <data key="d3">49.45100203619861</data>
+      <data key="d4">footway</data>
+      <data key="d5">True</data>
+      <data key="d6">False</data>
+      <data key="d7">Auditorium Tiered Steps</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_quad" target="j_east">
+      <data key="d3">110.32848936152355</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Engineering Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_lib" target="n_quad">
+      <data key="d3">38.22882645273961</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library Courtyard Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_lib" target="j_east">
+      <data key="d3">75.54232147728266</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library East Path</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_audi" target="n_quad">
+      <data key="d3">49.45100203619861</data>
+      <data key="d4">footway</data>
+      <data key="d5">True</data>
+      <data key="d6">False</data>
+      <data key="d7">Auditorium Tiered Steps</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_audi" target="j_west">
+      <data key="d3">72.91626126748281</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Auditorium West Ramp</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_audi" target="j_north">
+      <data key="d3">113.27586094340279</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">North Academic Spine</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_cse" target="n_ece">
+      <data key="d3">78.62746110448512</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Technology Wing Corridor</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_cse" target="j_north">
+      <data key="d3">64.3589221962414</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">CSE West Access</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_cse" target="j_ring_e">
+      <data key="d3">162.4762545589028</data>
+      <data key="d4">service</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East Ring Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_ece" target="j_east">
+      <data key="d3">46.516535864842936</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">ECE South Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_ece" target="n_cse">
+      <data key="d3">78.62746110448512</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Technology Wing Corridor</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_mech" target="j_east">
+      <data key="d3">100.86270578811201</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Mech Workshop Avenue</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_mech" target="n_canteen">
+      <data key="d3">62.02211793582779</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Workshop to Canteen Path</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_canteen" target="n_mech">
+      <data key="d3">62.02211793582779</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Workshop to Canteen Path</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_canteen" target="j_east">
+      <data key="d3">120.9326846420382</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Central Canteen Spine</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_canteen" target="j_ring_e">
+      <data key="d3">89.60991702825672</data>
+      <data key="d4">service</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Canteen Service Road</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_sports" target="j_ring_e">
+      <data key="d3">116.76998646162737</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Sports Complex Avenue</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_sports" target="n_ground">
+      <data key="d3">93.03277530858666</data>
+      <data key="d4">path</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Stadium Track Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_ground" target="n_sports">
+      <data key="d3">93.03277530858666</data>
+      <data key="d4">path</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Stadium Track Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_ground" target="n_boys_h">
+      <data key="d3">216.4116573995418</data>
+      <data key="d4">path</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Hostel Sports Connector</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_boys_h" target="j_north">
+      <data key="d3">105.19543334891164</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Boys Hostel Pathway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_boys_h" target="n_ground">
+      <data key="d3">216.4116573995418</data>
+      <data key="d4">path</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Hostel Sports Connector</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_girls_h" target="j_west">
+      <data key="d3">74.17645508435527</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Girls Hostel Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="n_innov" target="j_ring_e">
+      <data key="d3">58.429474368692475</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Innovation Hub Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_north" target="n_audi">
+      <data key="d3">113.27586094340279</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">North Academic Spine</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_north" target="n_cse">
+      <data key="d3">64.3589221962414</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">CSE West Access</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_north" target="n_boys_h">
+      <data key="d3">105.19543334891164</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Boys Hostel Pathway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_east" target="n_quad">
+      <data key="d3">110.32848936152355</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Engineering Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_east" target="n_lib">
+      <data key="d3">75.54232147728266</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library East Path</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_east" target="n_ece">
+      <data key="d3">46.516535864842936</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">ECE South Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_east" target="n_mech">
+      <data key="d3">100.86270578811201</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Mech Workshop Avenue</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_east" target="n_canteen">
+      <data key="d3">120.9326846420382</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Central Canteen Spine</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_ring_e" target="n_cse">
+      <data key="d3">162.4762545589028</data>
+      <data key="d4">service</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East Ring Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_ring_e" target="n_canteen">
+      <data key="d3">89.60991702825672</data>
+      <data key="d4">service</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Canteen Service Road</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_ring_e" target="n_innov">
+      <data key="d3">58.429474368692475</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Innovation Hub Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_ring_e" target="n_sports">
+      <data key="d3">116.76998646162737</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Sports Complex Avenue</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_west" target="n_admin">
+      <data key="d3">59.65055463321874</data>
+      <data key="d4">service</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">West Campus Lane</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_west" target="n_girls_h">
+      <data key="d3">74.17645508435527</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Girls Hostel Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="j_west" target="n_audi">
+      <data key="d3">72.91626126748281</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Auditorium West Ramp</data>
+      <data key="d8">False</data>
+    </edge>
+  </graph>
+</graphml>
