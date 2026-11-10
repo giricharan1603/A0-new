@@ -1,106 +1,106 @@
 [
   {
     "landmark_id": "MAIN_GATE",
-    "name": "Main Entrance Gate",
-    "latitude": 13.62810,
-    "longitude": 78.50150,
+    "name": "Main Entrance Gate (Highway)",
+    "latitude": 13.62935,
+    "longitude": 78.50205,
     "category": "Entrance",
-    "description": "Primary campus security checkpoint. Vehicular and pedestrian entry point."
+    "description": "Primary campus entrance on Anantapur - Tirupati Highway."
   },
   {
-    "landmark_id": "MITS_LIB",
-    "name": "Central Library",
-    "latitude": 13.62885,
-    "longitude": 78.50245,
-    "category": "Academic",
-    "description": "Main library with digital resources, journals, reading halls, and Wi-Fi zones."
+    "landmark_id": "BOYS_HOSTEL",
+    "name": "Boys Hostel",
+    "latitude": 13.63120,
+    "longitude": 78.50190,
+    "category": "Residential",
+    "description": "North campus residential quarters for male students."
+  },
+  {
+    "landmark_id": "GIRLS_HOSTEL",
+    "name": "Girls Hostel",
+    "latitude": 13.63005,
+    "longitude": 78.50280,
+    "category": "Residential",
+    "description": "Residential block for female students, east of entrance road."
+  },
+  {
+    "landmark_id": "MITS_GROUND",
+    "name": "MITS Ground",
+    "latitude": 13.62810,
+    "longitude": 78.50085,
+    "category": "Sports",
+    "description": "Main athletic sports field and event ground."
+  },
+  {
+    "landmark_id": "PLACEMENT_OFFICE",
+    "name": "Placement Office",
+    "latitude": 13.62635,
+    "longitude": 78.50115,
+    "category": "Administration",
+    "description": "Training and Placement Cell, corporate interview chambers."
   },
   {
     "landmark_id": "ADMIN_BLOCK",
-    "name": "Administrative Block",
-    "latitude": 13.62910,
-    "longitude": 78.50190,
+    "name": "Administrative & Circular Block",
+    "latitude": 13.62590,
+    "longitude": 78.50125,
     "category": "Administration",
-    "description": "Principal office, registrar, admissions, and examination cell."
+    "description": "Central Administrative Block, Principal's office, and Circular Block."
   },
   {
-    "landmark_id": "CSE_BLOCK",
-    "name": "CSE & AI Block",
-    "latitude": 13.62980,
-    "longitude": 78.50280,
+    "landmark_id": "CSE_DEPT",
+    "name": "CSE Department",
+    "latitude": 13.62560,
+    "longitude": 78.50005,
     "category": "Academic",
-    "description": "Computer Science, AI & Data Science departments. Programming labs and seminar halls."
+    "description": "Computer Science & AI engineering departments, programming laboratories."
   },
   {
-    "landmark_id": "ECE_BLOCK",
-    "name": "ECE & EEE Block",
-    "latitude": 13.62940,
-    "longitude": 78.50340,
-    "category": "Academic",
-    "description": "Electronics & Communication and Electrical Engineering departments. Robotics and embedded labs."
+    "landmark_id": "ANNAPURNA_BLOCK",
+    "name": "Annapurna Block",
+    "latitude": 13.62625,
+    "longitude": 78.49945,
+    "category": "Dining",
+    "description": "Campus food court, dining hall, and canteen services."
   },
   {
-    "landmark_id": "MECH_BLOCK",
-    "name": "Mech & Civil Block",
-    "latitude": 13.62850,
-    "longitude": 78.50380,
+    "landmark_id": "RR_BLOCK",
+    "name": "RR Block",
+    "latitude": 13.62625,
+    "longitude": 78.50000,
     "category": "Academic",
-    "description": "Mechanical and Civil Engineering departments. CAD/CAM labs and workshops."
+    "description": "Academic classrooms, tutorial rooms, and lecture halls."
+  },
+  {
+    "landmark_id": "GYM_SPORTS",
+    "name": "MITS Gym and Sports Room",
+    "latitude": 13.62565,
+    "longitude": 78.49940,
+    "category": "Sports",
+    "description": "Campus fitness gymnasium and indoor sports facility."
+  },
+  {
+    "landmark_id": "RESEARCH_BLOCK",
+    "name": "Research Block",
+    "latitude": 13.62510,
+    "longitude": 78.49945,
+    "category": "Research",
+    "description": "R&D innovation hubs, student project centers, and laboratories."
+  },
+  {
+    "landmark_id": "LIBRARY",
+    "name": "Central Library",
+    "latitude": 13.62515,
+    "longitude": 78.50045,
+    "category": "Academic",
+    "description": "Central reference library, e-resources, and reading halls."
   },
   {
     "landmark_id": "AUDITORIUM",
     "name": "Central Auditorium",
-    "latitude": 13.62930,
-    "longitude": 78.50230,
+    "latitude": 13.62510,
+    "longitude": 78.50120,
     "category": "Facility",
-    "description": "Air-conditioned auditorium for seminars, cultural events, and convocations."
-  },
-  {
-    "landmark_id": "CANTEEN",
-    "name": "Food Court & Canteen",
-    "latitude": 13.62890,
-    "longitude": 78.50420,
-    "category": "Dining",
-    "description": "Student cafeteria with hot meals, snacks, juice stalls, and seating area."
-  },
-  {
-    "landmark_id": "SPORTS_COMPLEX",
-    "name": "Indoor Sports Complex",
-    "latitude": 13.63050,
-    "longitude": 78.50360,
-    "category": "Sports",
-    "description": "Badminton courts, table tennis, yoga room, and fully equipped gymnasium."
-  },
-  {
-    "landmark_id": "PLAYGROUND",
-    "name": "Main Athletic Ground",
-    "latitude": 13.63110,
-    "longitude": 78.50420,
-    "category": "Sports",
-    "description": "400m running track, football field, cricket pitch, and shot-put area."
-  },
-  {
-    "landmark_id": "BOYS_HOSTEL",
-    "name": "Men's Hostel",
-    "latitude": 13.63120,
-    "longitude": 78.50220,
-    "category": "Residential",
-    "description": "On-campus residential quarters for male students. 24-hour security."
-  },
-  {
-    "landmark_id": "GIRLS_HOSTEL",
-    "name": "Women's Hostel",
-    "latitude": 13.63020,
-    "longitude": 78.50140,
-    "category": "Residential",
-    "description": "On-campus residential quarters for female students. Warden-supervised."
-  },
-  {
-    "landmark_id": "INNOVATION_HUB",
-    "name": "Incubation & R&D Hub",
-    "latitude": 13.62990,
-    "longitude": 78.50480,
-    "category": "Research",
-    "description": "Student startup incubator, IoT lab, 3D printing center, and patent filing support."
+    "description": "Auditorium for national symposiums, cultural fests, and conferences."
   }
 ]

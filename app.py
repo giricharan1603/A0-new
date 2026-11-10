@@ -127,7 +127,7 @@ if "travel_mode" not in st.session_state:
 if "campus_start_id" not in st.session_state:
     st.session_state.campus_start_id = "MAIN_GATE"
 if "campus_goal_id" not in st.session_state:
-    st.session_state.campus_goal_id = "CSE_BLOCK"
+    st.session_state.campus_goal_id = "CSE_DEPT"
 
 # ─────────────────────────────────────────────────────────────
 # THEME TOKENS
