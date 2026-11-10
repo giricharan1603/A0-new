@@ -30,22 +30,80 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────
-# CARTO MAP TILES WITH USER API KEY
+# MAP TILES CONFIGURATION (GOOGLE MAPS PRIMARY + CARTO WITH USER KEY)
 # ─────────────────────────────────────────────────────────────
 CARTO_API_KEY = "cb1_3sam_1_2355f1d9cf8d0ccc9cceaf27"
 
-CARTO_LIGHT_TILES = (
-    f"https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png"
-    f"?api_key={CARTO_API_KEY}"
-)
-CARTO_DARK_TILES = (
-    f"https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}@2x.png"
-    f"?api_key={CARTO_API_KEY}"
-)
-CARTO_ATTRIBUTION = (
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
-    'contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-)
+# Google Maps tile layers (Clean, zero watermark, crystal-clear labels)
+GOOGLE_MAPS_STREETS = "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+GOOGLE_MAPS_HYBRID  = "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+GOOGLE_MAPS_TERRAIN = "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
+GOOGLE_ATTRIBUTION  = "Map data &copy; Google Maps"
+
+# CARTO tile layers with user API key
+CARTO_LIGHT_TILES = f"https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png?api_key={CARTO_API_KEY}"
+CARTO_DARK_TILES  = f"https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}@2x.png?api_key={CARTO_API_KEY}"
+CARTO_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+
+OPENSTREETMAP_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+OPENSTREETMAP_ATTR  = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
+    """
+    Creates a high-definition Folium map with Google Maps as default primary base layer,
+    and a LayerControl selector including Google Satellite, CARTO (with user API key), and OSM.
+    """
+    fmap = folium.Map(
+        location=location,
+        zoom_start=zoom_start,
+        tiles=None,
+        prefer_canvas=prefer_canvas
+    )
+
+    # 1. Primary Default: Google Maps Streets (Clear, high-res, zero watermark)
+    folium.TileLayer(
+        tiles=GOOGLE_MAPS_STREETS,
+        attr=GOOGLE_ATTRIBUTION,
+        name="Google Maps (Streets)",
+        max_zoom=20,
+        control=True
+    ).add_to(fmap)
+
+    # 2. Google Maps Satellite / Hybrid
+    folium.TileLayer(
+        tiles=GOOGLE_MAPS_HYBRID,
+        attr=GOOGLE_ATTRIBUTION,
+        name="Google Maps (Satellite)",
+        max_zoom=20,
+        control=True,
+        show=False
+    ).add_to(fmap)
+
+    # 3. CARTO Tiles with user API Key
+    carto_tile = CARTO_DARK_TILES if st.session_state.dark_mode else CARTO_LIGHT_TILES
+    carto_name = "CARTO Dark Matter" if st.session_state.dark_mode else "CARTO Positron"
+    folium.TileLayer(
+        tiles=carto_tile,
+        attr=CARTO_ATTRIBUTION,
+        name=f"{carto_name} (User Key)",
+        max_zoom=19,
+        control=True,
+        show=False
+    ).add_to(fmap)
+
+    # 4. OpenStreetMap Standard
+    folium.TileLayer(
+        tiles=OPENSTREETMAP_TILES,
+        attr=OPENSTREETMAP_ATTR,
+        name="OpenStreetMap",
+        max_zoom=19,
+        control=True,
+        show=False
+    ).add_to(fmap)
+
+    # Layer switch controller in top-right of map
+    folium.LayerControl(position="topright").add_to(fmap)
+    return fmap
 
 # ─────────────────────────────────────────────────────────────
 # SESSION STATE INITIALIZATION
@@ -548,18 +606,16 @@ if st.session_state.app_mode == "realworld":
 
         with r_map_col:
             st.markdown(
-                f"<div class='card-label'>🗺️ Live CARTO Map (API Key Enabled) — {sp.get('short_name','')} to {ep.get('short_name','')}</div>",
+                f"<div class='card-label'>🗺️ Live Google Map / CARTO Layer — {sp.get('short_name','')} to {ep.get('short_name','')}</div>",
                 unsafe_allow_html=True
             )
             coords = route_res["path_coords"]
             lats = [c[0] for c in coords]
             lons = [c[1] for c in coords]
 
-            fmap = folium.Map(
+            fmap = create_base_map(
                 location=[(min(lats) + max(lats)) / 2.0, (min(lons) + max(lons)) / 2.0],
                 zoom_start=11,
-                tiles=T["map_tile"],
-                attr=CARTO_ATTRIBUTION,
                 prefer_canvas=True
             )
             fmap.fit_bounds([[min(lats), min(lons)], [max(lats), max(lons)]], padding=[45, 45])
@@ -641,15 +697,13 @@ if st.session_state.app_mode == "realworld":
 
     else:
         # Initial live map showing the pins in real-time
-        st.markdown("<div class='card-label'>🗺️ Live Map — Previewing Start & Destination Locations</div>", unsafe_allow_html=True)
+        st.markdown("<div class='card-label'>🗺️ Live Google Map / CARTO Layer — Previewing Start & Destination Locations</div>", unsafe_allow_html=True)
         if sp and ep:
             mid_lat = (sp["lat"] + ep["lat"]) / 2.0
             mid_lon = (sp["lon"] + ep["lon"]) / 2.0
-            live_map = folium.Map(
+            live_map = create_base_map(
                 location=[mid_lat, mid_lon],
                 zoom_start=9,
-                tiles=T["map_tile"],
-                attr=CARTO_ATTRIBUTION,
                 prefer_canvas=True
             )
             live_map.fit_bounds([[min(sp["lat"], ep["lat"]), min(sp["lon"], ep["lon"])], [max(sp["lat"], ep["lat"]), max(sp["lon"], ep["lon"])]], padding=[50, 50])
@@ -670,11 +724,9 @@ if st.session_state.app_mode == "realworld":
 
             components.html(live_map._repr_html_(), height=500)
         else:
-            default_map = folium.Map(
+            default_map = create_base_map(
                 location=[13.6281, 78.5015],
-                zoom_start=10,
-                tiles=T["map_tile"],
-                attr=CARTO_ATTRIBUTION
+                zoom_start=10
             )
             components.html(default_map._repr_html_(), height=500)
 
@@ -774,15 +826,13 @@ else:
 
             with c_map_col:
                 st.markdown(
-                    f"<div class='card-label'>🗺️ MITS Campus Map — {start_lm.get('name','')} to {goal_lm.get('name','')}</div>",
+                    f"<div class='card-label'>🗺️ MITS Campus Map (Google / CARTO) — {start_lm.get('name','')} to {goal_lm.get('name','')}</div>",
                     unsafe_allow_html=True
                 )
                 coords = c_res["path_coordinates"]
-                fmap = folium.Map(
+                fmap = create_base_map(
                     location=list(CAMPUS_CENTER),
-                    zoom_start=17,
-                    tiles=T["map_tile"],
-                    attr=CARTO_ATTRIBUTION
+                    zoom_start=17
                 )
 
                 # Route line
