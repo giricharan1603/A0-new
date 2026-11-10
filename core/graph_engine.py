@@ -1,6 +1,6 @@
 """
 graph_engine.py - MITS Campus graph loading, caching, coordinate snapping,
-and image-calibrated pathway topology aligned with physical coordinates at Tummachettupalle.
+and image-calibrated pathway topology precisely aligned with ground truth reference image.
 """
 
 import os
@@ -14,39 +14,39 @@ from core.astar import haversine_distance
 DEFAULT_CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "graphs")
 LANDMARKS_FILE   = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "landmarks.json")
 
-# Verified Real Physical MITS Campus Centroid (Tummachettupalle / Angallu)
-CAMPUS_CENTER = (13.62985, 78.47859)
+# Fine-tuned campus centroid
+CAMPUS_CENTER = (13.6276, 78.4783)
 
 
 def create_mits_synthetic_campus_graph() -> nx.DiGraph:
     """
     Builds the precise pedestrian and vehicle road graph of MITS Madanapalle campus
-    calibrated to the verified real ground location at 13.62985 N, 78.47859 E.
+    calibrated to the verified real ground location matching the user reference image.
     """
     G = nx.DiGraph()
 
-    # Landmark nodes positioned precisely on real physical buildings
+    # Landmark nodes positioned precisely on real physical buildings from the image
     nodes = {
-        # Northern Zone (Across / along highway)
-        "MAIN_GATE":        {"y": 13.63170, "x": 78.47964, "name": "Main Entrance Gate"},
-        "BOYS_HOSTEL":      {"y": 13.63355, "x": 78.47949, "name": "Boys Hostel"},
-        "GIRLS_HOSTEL":     {"y": 13.63240, "x": 78.48039, "name": "Girls Hostel"},
+        # Northern Zone (Along highway)
+        "MAIN_GATE":        {"y": 13.62935, "x": 78.47955, "name": "Main Entrance Gate"},
+        "BOYS_HOSTEL":      {"y": 13.63150, "x": 78.47935, "name": "Boys Hostel"},
+        "GIRLS_HOSTEL":     {"y": 13.63025, "x": 78.48025, "name": "Girls Hostel"},
         # Central Zone
-        "MITS_GROUND":      {"y": 13.63045, "x": 78.47844, "name": "MITS Ground"},
-        "J_CENTRAL":        {"y": 13.62995, "x": 78.47924, "name": "Central Boulevard Junction"},
+        "MITS_GROUND":      {"y": 13.62835, "x": 78.47820, "name": "MITS Ground"},
+        "J_CENTRAL":        {"y": 13.62790, "x": 78.47915, "name": "Central Boulevard Junction"},
         # Southern Academic & Administrative Complex
-        "PLACEMENT_OFFICE": {"y": 13.62870, "x": 78.47874, "name": "Placement Office"},
-        "ADMIN_BLOCK":      {"y": 13.62825, "x": 78.47884, "name": "Administrative & Circular Block"},
-        "CSE_DEPT":         {"y": 13.62795, "x": 78.47764, "name": "CSE Department"},
-        "ANNAPURNA_BLOCK":  {"y": 13.62860, "x": 78.47704, "name": "Annapurna Block"},
-        "RR_BLOCK":         {"y": 13.62860, "x": 78.47759, "name": "RR Block"},
-        "GYM_SPORTS":       {"y": 13.62800, "x": 78.47699, "name": "MITS Gym and Sports Room"},
-        "RESEARCH_BLOCK":   {"y": 13.62745, "x": 78.47704, "name": "Research Block"},
-        "LIBRARY":          {"y": 13.62750, "x": 78.47804, "name": "Central Library"},
-        "AUDITORIUM":       {"y": 13.62745, "x": 78.47879, "name": "Central Auditorium"},
+        "PLACEMENT_OFFICE": {"y": 13.62680, "x": 78.47870, "name": "Placement Office"},
+        "ADMIN_BLOCK":      {"y": 13.62630, "x": 78.47880, "name": "Administrative & Circular Block"},
+        "CSE_DEPT":         {"y": 13.62605, "x": 78.47765, "name": "CSE Department"},
+        "ANNAPURNA_BLOCK":  {"y": 13.62670, "x": 78.47705, "name": "Annapurna Block"},
+        "RR_BLOCK":         {"y": 13.62670, "x": 78.47760, "name": "RR Block"},
+        "GYM_SPORTS":       {"y": 13.62610, "x": 78.47698, "name": "MITS Gym and Sports Room"},
+        "RESEARCH_BLOCK":   {"y": 13.62550, "x": 78.47705, "name": "Research Block"},
+        "LIBRARY":          {"y": 13.62555, "x": 78.47805, "name": "Central Library"},
+        "AUDITORIUM":       {"y": 13.62550, "x": 78.47880, "name": "Central Auditorium"},
         # Intermediary pathway junctions
-        "J_ACADEMIC_QUAD":  {"y": 13.62810, "x": 78.47819, "name": "Academic Quadrangle Crosswalk"},
-        "J_GROUND_WEST":    {"y": 13.62915, "x": 78.47719, "name": "Ground South-West Lane"},
+        "J_ACADEMIC_QUAD":  {"y": 13.62615, "x": 78.47820, "name": "Academic Quadrangle Crosswalk"},
+        "J_GROUND_WEST":    {"y": 13.62725, "x": 78.47715, "name": "Ground South-West Lane"},
     }
 
     for nid, data in nodes.items():
