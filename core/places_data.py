@@ -21,8 +21,8 @@ PLACES_DB = [
         "district": "Annamayya District",
         "state": "Andhra Pradesh",
         "country": "India",
-        "lat": 13.6281,
-        "lon": 78.5015,
+        "lat": 13.62985,
+        "lon": 78.47859,
         "aliases": ["mits", "mits madanapalle", "mits college", "angallu mits", "mits campus"]
     },
     {

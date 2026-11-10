@@ -2,104 +2,104 @@
   {
     "landmark_id": "MAIN_GATE",
     "name": "Main Entrance Gate (Highway)",
-    "latitude": 13.62935,
-    "longitude": 78.50205,
+    "latitude": 13.63170,
+    "longitude": 78.47964,
     "category": "Entrance",
-    "description": "Primary campus entrance on Anantapur - Tirupati Highway."
+    "description": "Primary campus entrance on Anantapur - Tirupati Road (NH-42)."
   },
   {
     "landmark_id": "BOYS_HOSTEL",
     "name": "Boys Hostel",
-    "latitude": 13.63120,
-    "longitude": 78.50190,
+    "latitude": 13.63355,
+    "longitude": 78.47949,
     "category": "Residential",
     "description": "North campus residential quarters for male students."
   },
   {
     "landmark_id": "GIRLS_HOSTEL",
     "name": "Girls Hostel",
-    "latitude": 13.63005,
-    "longitude": 78.50280,
+    "latitude": 13.63240,
+    "longitude": 78.48039,
     "category": "Residential",
     "description": "Residential block for female students, east of entrance road."
   },
   {
     "landmark_id": "MITS_GROUND",
     "name": "MITS Ground",
-    "latitude": 13.62810,
-    "longitude": 78.50085,
+    "latitude": 13.63045,
+    "longitude": 78.47844,
     "category": "Sports",
-    "description": "Main athletic sports field and event ground."
+    "description": "Main athletic sports field and cricket / event ground."
   },
   {
     "landmark_id": "PLACEMENT_OFFICE",
     "name": "Placement Office",
-    "latitude": 13.62635,
-    "longitude": 78.50115,
+    "latitude": 13.62870,
+    "longitude": 78.47874,
     "category": "Administration",
     "description": "Training and Placement Cell, corporate interview chambers."
   },
   {
     "landmark_id": "ADMIN_BLOCK",
     "name": "Administrative & Circular Block",
-    "latitude": 13.62590,
-    "longitude": 78.50125,
+    "latitude": 13.62825,
+    "longitude": 78.47884,
     "category": "Administration",
     "description": "Central Administrative Block, Principal's office, and Circular Block."
   },
   {
     "landmark_id": "CSE_DEPT",
     "name": "CSE Department",
-    "latitude": 13.62560,
-    "longitude": 78.50005,
+    "latitude": 13.62795,
+    "longitude": 78.47764,
     "category": "Academic",
     "description": "Computer Science & AI engineering departments, programming laboratories."
   },
   {
     "landmark_id": "ANNAPURNA_BLOCK",
     "name": "Annapurna Block",
-    "latitude": 13.62625,
-    "longitude": 78.49945,
+    "latitude": 13.62860,
+    "longitude": 78.47704,
     "category": "Dining",
     "description": "Campus food court, dining hall, and canteen services."
   },
   {
     "landmark_id": "RR_BLOCK",
     "name": "RR Block",
-    "latitude": 13.62625,
-    "longitude": 78.50000,
+    "latitude": 13.62860,
+    "longitude": 78.47759,
     "category": "Academic",
     "description": "Academic classrooms, tutorial rooms, and lecture halls."
   },
   {
     "landmark_id": "GYM_SPORTS",
     "name": "MITS Gym and Sports Room",
-    "latitude": 13.62565,
-    "longitude": 78.49940,
+    "latitude": 13.62800,
+    "longitude": 78.47699,
     "category": "Sports",
     "description": "Campus fitness gymnasium and indoor sports facility."
   },
   {
     "landmark_id": "RESEARCH_BLOCK",
     "name": "Research Block",
-    "latitude": 13.62510,
-    "longitude": 78.49945,
+    "latitude": 13.62745,
+    "longitude": 78.47704,
     "category": "Research",
     "description": "R&D innovation hubs, student project centers, and laboratories."
   },
   {
     "landmark_id": "LIBRARY",
     "name": "Central Library",
-    "latitude": 13.62515,
-    "longitude": 78.50045,
+    "latitude": 13.62750,
+    "longitude": 78.47804,
     "category": "Academic",
     "description": "Central reference library, e-resources, and reading halls."
   },
   {
     "landmark_id": "AUDITORIUM",
     "name": "Central Auditorium",
-    "latitude": 13.62510,
-    "longitude": 78.50120,
+    "latitude": 13.62745,
+    "longitude": 78.47879,
     "category": "Facility",
     "description": "Auditorium for national symposiums, cultural fests, and conferences."
   }
