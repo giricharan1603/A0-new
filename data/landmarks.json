@@ -1,106 +1,90 @@
 [
   {
     "landmark_id": "MAIN_GATE",
-    "name": "Main Entrance Gate",
-    "latitude": 13.62810,
-    "longitude": 78.50150,
+    "name": "Highway Intersection / Main Entrance Road",
+    "latitude": 13.63051,
+    "longitude": 78.47781,
     "category": "Entrance",
-    "description": "Primary campus security checkpoint. Vehicular and pedestrian entry point."
-  },
-  {
-    "landmark_id": "MITS_LIB",
-    "name": "Central Library",
-    "latitude": 13.62885,
-    "longitude": 78.50245,
-    "category": "Academic",
-    "description": "Main library with digital resources, journals, reading halls, and Wi-Fi zones."
-  },
-  {
-    "landmark_id": "ADMIN_BLOCK",
-    "name": "Administrative Block",
-    "latitude": 13.62910,
-    "longitude": 78.50190,
-    "category": "Administration",
-    "description": "Principal office, registrar, admissions, and examination cell."
-  },
-  {
-    "landmark_id": "CSE_BLOCK",
-    "name": "CSE & AI Block",
-    "latitude": 13.62980,
-    "longitude": 78.50280,
-    "category": "Academic",
-    "description": "Computer Science, AI & Data Science departments. Programming labs and seminar halls."
-  },
-  {
-    "landmark_id": "ECE_BLOCK",
-    "name": "ECE & EEE Block",
-    "latitude": 13.62940,
-    "longitude": 78.50340,
-    "category": "Academic",
-    "description": "Electronics & Communication and Electrical Engineering departments. Robotics and embedded labs."
-  },
-  {
-    "landmark_id": "MECH_BLOCK",
-    "name": "Mech & Civil Block",
-    "latitude": 13.62850,
-    "longitude": 78.50380,
-    "category": "Academic",
-    "description": "Mechanical and Civil Engineering departments. CAD/CAM labs and workshops."
-  },
-  {
-    "landmark_id": "AUDITORIUM",
-    "name": "Central Auditorium",
-    "latitude": 13.62930,
-    "longitude": 78.50230,
-    "category": "Facility",
-    "description": "Air-conditioned auditorium for seminars, cultural events, and convocations."
-  },
-  {
-    "landmark_id": "CANTEEN",
-    "name": "Food Court & Canteen",
-    "latitude": 13.62890,
-    "longitude": 78.50420,
-    "category": "Dining",
-    "description": "Student cafeteria with hot meals, snacks, juice stalls, and seating area."
-  },
-  {
-    "landmark_id": "SPORTS_COMPLEX",
-    "name": "Indoor Sports Complex",
-    "latitude": 13.63050,
-    "longitude": 78.50360,
-    "category": "Sports",
-    "description": "Badminton courts, table tennis, yoga room, and fully equipped gymnasium."
-  },
-  {
-    "landmark_id": "PLAYGROUND",
-    "name": "Main Athletic Ground",
-    "latitude": 13.63110,
-    "longitude": 78.50420,
-    "category": "Sports",
-    "description": "400m running track, football field, cricket pitch, and shot-put area."
+    "description": "Primary highway intersection and main entrance road to campus."
   },
   {
     "landmark_id": "BOYS_HOSTEL",
-    "name": "Men's Hostel",
-    "latitude": 13.63120,
-    "longitude": 78.50220,
+    "name": "Boys Hostel Entrance Area",
+    "latitude": 13.63248,
+    "longitude": 78.47761,
     "category": "Residential",
-    "description": "On-campus residential quarters for male students. 24-hour security."
+    "description": "North campus residential quarters for male students."
   },
   {
     "landmark_id": "GIRLS_HOSTEL",
-    "name": "Women's Hostel",
-    "latitude": 13.63020,
-    "longitude": 78.50140,
+    "name": "Girls Hostel Area",
+    "latitude": 13.63152,
+    "longitude": 78.47863,
     "category": "Residential",
-    "description": "On-campus residential quarters for female students. Warden-supervised."
+    "description": "North-eastern campus residential block for female students."
   },
   {
-    "landmark_id": "INNOVATION_HUB",
-    "name": "Incubation & R&D Hub",
-    "latitude": 13.62990,
-    "longitude": 78.50480,
-    "category": "Research",
-    "description": "Student startup incubator, IoT lab, 3D printing center, and patent filing support."
+    "landmark_id": "MITS_GROUND",
+    "name": "MITS Ground",
+    "latitude": 13.62923,
+    "longitude": 78.47641,
+    "category": "Sports",
+    "description": "Large central athletic sports and event ground."
+  },
+  {
+    "landmark_id": "PLACEMENT_OFFICE",
+    "name": "Placement Office Block Entrance",
+    "latitude": 13.62774,
+    "longitude": 78.47649,
+    "category": "Administration",
+    "description": "Training and Placement Cell, corporate interview block."
+  },
+  {
+    "landmark_id": "ADMIN_COURTYARD",
+    "name": "Main Internal Courtyard & Block Core",
+    "latitude": 13.62719,
+    "longitude": 78.47656,
+    "category": "Administration",
+    "description": "Central academic block core, circular block, and administrative courtyard."
+  },
+  {
+    "landmark_id": "GYM_UPPER",
+    "name": "MITS Gym & Sports Room (Upper Section)",
+    "latitude": 13.62778,
+    "longitude": 78.47545,
+    "category": "Sports",
+    "description": "Upper sports annex and recreation facility."
+  },
+  {
+    "landmark_id": "GYM_MAIN",
+    "name": "MITS Gym and Sports Room (Main Facility)",
+    "latitude": 13.62725,
+    "longitude": 78.47547,
+    "category": "Sports",
+    "description": "Primary fitness gymnasium and indoor games hall."
+  },
+  {
+    "landmark_id": "SW_ACADEMIC_BLOCK",
+    "name": "Southwestern Academic Block Corner",
+    "latitude": 13.62657,
+    "longitude": 78.47546,
+    "category": "Academic",
+    "description": "Southwestern academic classrooms, laboratories, and research block."
+  },
+  {
+    "landmark_id": "BOTTOM_WALKWAY",
+    "name": "Bottom Center Walkway",
+    "latitude": 13.62678,
+    "longitude": 78.47639,
+    "category": "Academic",
+    "description": "Southern connecting promenade between library and academic wings."
+  },
+  {
+    "landmark_id": "AUDITORIUM_ENTRANCE",
+    "name": "Auditorium & Seminar Halls Entrance",
+    "latitude": 13.62656,
+    "longitude": 78.47697,
+    "category": "Facility",
+    "description": "Auditorium, seminar halls, and convention center entrance."
   }
 ]

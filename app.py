@@ -117,7 +117,7 @@ if "real_start_text" not in st.session_state:
 if "real_end_text" not in st.session_state:
     st.session_state.real_end_text = "Tirupati"
 if "real_start_place" not in st.session_state:
-    st.session_state.real_start_place = {"name": "Madanapalle", "short_name": "Madanapalle, Andhra Pradesh", "lat": 13.5558, "lon": 78.5015}
+    st.session_state.real_start_place = {"name": "Madanapalle", "short_name": "Madanapalle, Andhra Pradesh", "lat": 13.63051, "lon": 78.47781}
 if "real_end_place" not in st.session_state:
     st.session_state.real_end_place = {"name": "Tirupati", "short_name": "Tirupati, Andhra Pradesh", "lat": 13.6316, "lon": 79.4232}
 if "real_route_result" not in st.session_state:
@@ -127,7 +127,7 @@ if "travel_mode" not in st.session_state:
 if "campus_start_id" not in st.session_state:
     st.session_state.campus_start_id = "MAIN_GATE"
 if "campus_goal_id" not in st.session_state:
-    st.session_state.campus_goal_id = "CSE_BLOCK"
+    st.session_state.campus_goal_id = "ADMIN_COURTYARD"
 
 # ─────────────────────────────────────────────────────────────
 # THEME TOKENS
