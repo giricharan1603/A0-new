@@ -1,17 +1,11 @@
 """
-app.py  —  Campus Landmark A* Route Planner
-MITS Madanapalle | AI Lab Mini-Project (23CSE109 / 23CSE208)
+app.py — RealRoute: Real-World A* Route Planner
+Google Maps-style UI using real OpenStreetMap road networks.
 
-Features:
-  · Premium dark / light theme toggle
-  · CARTO map with API key (light_all / dark_all tiles)
-  · Interactive Start & Destination selectbox inputs above the map
-  · Swap button to reverse route direction
-  · Clickable landmark markers with Set-as-Start / Set-as-Destination popups
-  · Custom A* & Dijkstra routing with turn-by-turn directions
-  · Realistic travel time estimation
-  · A* vs Dijkstra benchmark analytics
-  · Step-by-step algorithm visualiser
+Type any place (village, city, landmark) → get optimal route via A* algorithm.
+CARTO map tiles with API key for professional map display.
+
+MITS Madanapalle | AI Lab Mini-Project (23CSE109 / 23CSE208)
 """
 
 import streamlit as st
@@ -20,331 +14,236 @@ import folium
 from folium.plugins import AntPath
 import pandas as pd
 
-from core.graph_engine import CampusGraphManager, CAMPUS_CENTER
-from core.route_service import CampusRouteService
-from core.tracer import record_search_trace
+from core.geocoder  import geocode, haversine_km
+from core.realworld_router import route_realworld
 
 # ─────────────────────────────────────────────────────────────
 # PAGE CONFIG
 # ─────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MITS Campus Route Planner",
-    page_icon="🏫",
+    page_title="RealRoute — A* Navigation",
+    page_icon="🗺️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # ─────────────────────────────────────────────────────────────
-# CARTO API KEY
+# CARTO TILES (API key embedded)
 # ─────────────────────────────────────────────────────────────
-CARTO_API_KEY = "cb1_3sam_1_2355f1d9cf8d0ccc9cceaf27"
-
-CARTO_LIGHT_TILES = (
-    f"https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png"
-    f"?api_key={CARTO_API_KEY}"
-)
-CARTO_DARK_TILES = (
-    f"https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}@2x.png"
-    f"?api_key={CARTO_API_KEY}"
-)
-CARTO_ATTRIBUTION = (
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
-    'contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-)
+CARTO_KEY = "cb1_3sam_1_2355f1d9cf8d0ccc9cceaf27"
+CARTO_LIGHT = f"https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png?api_key={CARTO_KEY}"
+CARTO_DARK  = f"https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}@2x.png?api_key={CARTO_KEY}"
+CARTO_ATTR  = ('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
+               'contributors &copy; <a href="https://carto.com/">CARTO</a>')
 
 # ─────────────────────────────────────────────────────────────
-# SESSION STATE DEFAULTS
+# SESSION STATE
 # ─────────────────────────────────────────────────────────────
-if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = True          # default dark
-if "start_id" not in st.session_state:
-    st.session_state.start_id = None
-if "goal_id" not in st.session_state:
-    st.session_state.goal_id = None
-
-# Handle marker-click URL params (Set-as-Start / Set-as-Destination)
-qp = st.query_params
-if "set_start" in qp:
-    st.session_state.start_id = qp["set_start"]
-    st.query_params.clear()
-    st.rerun()
-if "set_goal" in qp:
-    st.session_state.goal_id = qp["set_goal"]
-    st.query_params.clear()
-    st.rerun()
-
-# ─────────────────────────────────────────────────────────────
-# THEME TOKENS
-# ─────────────────────────────────────────────────────────────
-LIGHT = {
-    "bg":           "#F0F4FF",
-    "card_bg":      "rgba(255,255,255,0.85)",
-    "card_border":  "#C7D7F5",
-    "glass_bg":     "rgba(255,255,255,0.72)",
-    "step_bg":      "#F0FDF4",
-    "step_border":  "#16A34A",
-    "title":        "#1E3A8A",
-    "subtitle":     "#475569",
-    "accent":       "#2563EB",
-    "accent2":      "#7C3AED",
-    "tag_bg":       "#EFF6FF",
-    "tag_text":     "#1D4ED8",
-    "info_bg":      "#F0F9FF",
-    "info_border":  "#7DD3FC",
-    "metric_bg":    "rgba(255,255,255,0.9)",
-    "metric_brd":   "#BFDBFE",
-    "text":         "#1E293B",
-    "muted":        "#64748B",
-    "header_grad":  "linear-gradient(135deg,#1E3A8A 0%,#2563EB 50%,#7C3AED 100%)",
-    "map_tiles":    CARTO_LIGHT_TILES,
-    "route_color":  "#2563EB",
+defaults = {
+    "dark_mode":      True,
+    "start_text":     "",
+    "end_text":       "",
+    "start_place":    None,   # dict: {display_name, short_name, lat, lon}
+    "end_place":      None,
+    "start_sugg":     [],
+    "end_sugg":       [],
+    "route_result":   None,
+    "route_key":      None,
+    "search_active":  None,   # "start" | "end" | None
+    "travel_mode":    "drive",
+    "run_benchmark":  True,
 }
-DARK = {
-    "bg":           "#0A0F1E",
-    "card_bg":      "rgba(15,23,42,0.85)",
-    "card_border":  "#1E3A5F",
-    "glass_bg":     "rgba(15,23,42,0.72)",
-    "step_bg":      "#0D2615",
-    "step_border":  "#22C55E",
-    "title":        "#E2E8F0",
-    "subtitle":     "#94A3B8",
-    "accent":       "#60A5FA",
-    "accent2":      "#A78BFA",
-    "tag_bg":       "#1E3A5F",
-    "tag_text":     "#93C5FD",
-    "info_bg":      "#0C1F35",
-    "info_border":  "#38BDF8",
-    "metric_bg":    "rgba(30,41,59,0.9)",
-    "metric_brd":   "#334155",
-    "text":         "#E2E8F0",
-    "muted":        "#94A3B8",
-    "header_grad":  "linear-gradient(135deg,#0F172A 0%,#1E3A8A 50%,#4C1D95 100%)",
-    "map_tiles":    CARTO_DARK_TILES,
-    "route_color":  "#60A5FA",
-}
-T = DARK if st.session_state.dark_mode else LIGHT
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
+
+T_DARK  = "#0A0F1E"
+T_CARD  = "rgba(15,23,42,0.90)" if st.session_state.dark_mode else "rgba(255,255,255,0.92)"
+
+# ─────────────────────────────────────────────────────────────
+# THEME
+# ─────────────────────────────────────────────────────────────
+if st.session_state.dark_mode:
+    T = dict(
+        bg="#0A0F1E", card="rgba(15,23,42,0.92)", border="#1E3A5F",
+        glass="rgba(15,23,42,0.80)", text="#E2E8F0", muted="#94A3B8",
+        accent="#60A5FA", accent2="#A78BFA", green="#22C55E", red="#EF4444",
+        step_bg="#0D1F12", step_brd="#16A34A",
+        info_bg="#0C1F35", info_brd="#38BDF8",
+        metric_bg="rgba(30,41,59,0.95)", metric_brd="#334155",
+        hdr="linear-gradient(135deg,#060B18 0%,#0F2456 45%,#1A0A3A 100%)",
+        sugg_bg="#0F1A2E", sugg_hover="#1A2D45",
+        map_tiles=CARTO_DARK, route_color="#60A5FA",
+        input_bg="#0F1A2E", input_brd="#1E3A5F",
+    )
+else:
+    T = dict(
+        bg="#EEF2FF", card="rgba(255,255,255,0.95)", border="#C7D7F5",
+        glass="rgba(255,255,255,0.80)", text="#1E293B", muted="#64748B",
+        accent="#2563EB", accent2="#7C3AED", green="#16A34A", red="#DC2626",
+        step_bg="#F0FDF4", step_brd="#16A34A",
+        info_bg="#EFF6FF", info_brd="#93C5FD",
+        metric_bg="rgba(255,255,255,0.95)", metric_brd="#BFDBFE",
+        hdr="linear-gradient(135deg,#1E3A8A 0%,#2563EB 55%,#4C1D95 100%)",
+        sugg_bg="#F8FAFF", sugg_hover="#EFF6FF",
+        map_tiles=CARTO_LIGHT, route_color="#2563EB",
+        input_bg="#FFFFFF", input_brd="#C7D7F5",
+    )
 
 # ─────────────────────────────────────────────────────────────
 # GLOBAL CSS
 # ─────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-  /* ── Page background ── */
+  /* Page */
   .stApp {{
     background: {T['bg']};
-    background-image: radial-gradient(ellipse at 20% 20%, rgba(37,99,235,0.08) 0%, transparent 60%),
-                      radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.08) 0%, transparent 60%);
+    background-image:
+      radial-gradient(ellipse at 15% 10%, rgba(96,165,250,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 90%, rgba(167,139,250,0.07) 0%, transparent 55%);
   }}
+  #MainMenu, footer, .stDeployButton {{ visibility: hidden; }}
 
-  /* ── Hide default streamlit toolbar on embeds ── */
-  #MainMenu, footer {{ visibility: hidden; }}
-
-  /* ── Hero header ── */
-  .hero-header {{
-    background: {T['header_grad']};
-    border-radius: 16px;
-    padding: 28px 36px 22px;
-    margin-bottom: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    position: relative;
-    overflow: hidden;
+  /* Hero header */
+  .hero {{
+    background: {T['hdr']};
+    border-radius: 20px;
+    padding: 26px 36px 20px;
+    margin-bottom: 0;
+    position: relative; overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
   }}
-  .hero-header::before {{
-    content: '';
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(
-      45deg, transparent, transparent 40px,
-      rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 80px
-    );
+  .hero::after {{
+    content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(45deg,transparent,transparent 50px,
+      rgba(255,255,255,0.025) 50px,rgba(255,255,255,0.025) 100px);
   }}
   .hero-title {{
-    font-size: 2.2rem; font-weight: 800;
-    color: #FFFFFF; margin: 0 0 4px 0;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    position: relative;
+    font-size:2rem; font-weight:900; color:#fff;
+    margin:0 0 4px; position:relative; z-index:1;
+    letter-spacing:-0.02em;
   }}
   .hero-sub {{
-    font-size: 1rem; color: rgba(255,255,255,0.80);
-    margin: 0; position: relative;
+    font-size:.92rem; color:rgba(255,255,255,0.75);
+    margin:0; position:relative; z-index:1;
   }}
-  .hero-badge {{
-    display: inline-block;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 20px; padding: 4px 14px;
-    font-size: 0.78rem; color: #fff;
-    margin-top: 10px; position: relative;
-    backdrop-filter: blur(4px);
-  }}
-
-  /* ── Route input card ── */
-  .route-card {{
-    background: {T['glass_bg']};
-    border: 1px solid {T['card_border']};
-    border-radius: 16px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-  }}
-  .route-card-title {{
-    font-size: 0.85rem; font-weight: 700;
-    color: {T['muted']}; letter-spacing: 0.08em;
-    text-transform: uppercase; margin-bottom: 12px;
+  .hero-pill {{
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.22);
+    border-radius:20px; padding:4px 13px;
+    font-size:0.75rem; color:#fff; margin:10px 6px 0 0;
+    position:relative; z-index:1;
+    backdrop-filter:blur(6px);
   }}
 
-  /* ── Metric cards ── */
-  .metric-row {{
+  /* Search card */
+  .search-card {{
+    background: {T['card']};
+    border: 1px solid {T['border']};
+    border-radius: 18px;
+    padding: 20px 24px 16px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.14);
+    margin-bottom: 0;
+  }}
+  .search-label {{
+    font-size: 0.72rem; font-weight: 800;
+    color: {T['muted']}; letter-spacing: 0.10em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }}
+
+  /* Suggestion buttons */
+  .sugg-btn {{
+    display: block; width: 100%;
+    text-align: left; padding: 9px 14px;
+    background: {T['sugg_bg']}; color: {T['text']};
+    border: 1px solid {T['border']}; border-radius: 10px;
+    font-size: 0.83rem; cursor: pointer;
+    margin-bottom: 5px;
+    transition: background 0.15s ease;
+  }}
+  .sugg-btn:hover {{ background: {T['sugg_hover']}; }}
+  .sugg-name  {{ font-weight: 700; display:block; }}
+  .sugg-full  {{ font-size: 0.74rem; color: {T['muted']}; display:block; margin-top:1px; }}
+
+  /* Metric cards */
+  .metrics-grid {{
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin: 18px 0;
+    gap: 12px; margin: 16px 0 8px;
   }}
-  .metric-card {{
+  .m-card {{
     background: {T['metric_bg']};
     border: 1px solid {T['metric_brd']};
-    border-radius: 14px;
-    padding: 16px 18px;
+    border-radius: 14px; padding: 15px 16px;
     text-align: center;
     backdrop-filter: blur(8px);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform .18s ease, box-shadow .18s ease;
   }}
-  .metric-card:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
-  }}
-  .metric-icon {{ font-size: 1.5rem; margin-bottom: 4px; }}
-  .metric-value {{
-    font-size: 1.45rem; font-weight: 800;
-    color: {T['accent']}; line-height: 1.1;
-  }}
-  .metric-label {{
-    font-size: 0.75rem; color: {T['muted']};
-    font-weight: 600; margin-top: 2px;
-  }}
-  .metric-delta {{
-    font-size: 0.72rem; color: #22C55E;
-    font-weight: 600; margin-top: 3px;
-  }}
+  .m-card:hover {{ transform:translateY(-3px); box-shadow:0 8px 22px rgba(0,0,0,0.2); }}
+  .m-icon  {{ font-size:1.4rem; margin-bottom:3px; }}
+  .m-value {{ font-size:1.35rem; font-weight:800; color:{T['accent']}; line-height:1.1; }}
+  .m-label {{ font-size:0.72rem; color:{T['muted']}; font-weight:600; margin-top:2px; }}
+  .m-sub   {{ font-size:0.69rem; color:{T['green']}; font-weight:600; margin-top:3px; }}
 
-  /* ── Step directions ── */
-  .step-box {{
+  /* Step directions */
+  .step-wrap {{
     background: {T['step_bg']};
-    border-left: 4px solid {T['step_border']};
-    padding: 10px 14px; margin-bottom: 8px;
+    border-left: 4px solid {T['step_brd']};
+    padding: 10px 14px; margin-bottom: 7px;
     border-radius: 0 10px 10px 0;
-    position: relative;
   }}
   .step-num {{
-    display: inline-block;
-    background: {T['step_border']};
-    color: #fff; border-radius: 50%;
-    width: 22px; height: 22px;
-    line-height: 22px; text-align: center;
-    font-size: 0.72rem; font-weight: 700;
-    margin-right: 8px;
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%;
+    background:{T['step_brd']}; color:#fff;
+    font-size:.7rem; font-weight:800; margin-right:7px; flex-shrink:0;
   }}
-  .step-street {{
-    font-weight: 600; color: {T['text']}; font-size: 0.88rem;
-  }}
-  .step-detail {{
-    color: {T['muted']}; font-size: 0.78rem; margin-top: 3px;
-  }}
+  .step-street {{ font-weight:700; color:{T['text']}; font-size:.86rem; }}
+  .step-detail {{ color:{T['muted']}; font-size:.76rem; margin-top:3px; margin-left:29px; }}
 
-  /* ── Landmark info card ── */
-  .lm-card {{
-    background: {T['info_bg']};
-    border: 1px solid {T['info_border']};
-    border-radius: 12px; padding: 14px 18px; margin-bottom: 10px;
-  }}
-  .cat-tag {{
-    display: inline-block;
-    background: {T['tag_bg']}; color: {T['tag_text']};
-    font-size: .72rem; font-weight: 700; padding: 3px 10px;
-    border-radius: 20px; margin-bottom: 6px; letter-spacing: 0.04em;
-  }}
-  .lm-name {{ font-weight: 700; color: {T['text']}; font-size: 0.95rem; }}
-  .lm-desc {{ color: {T['muted']}; font-size: 0.80rem; margin-top: 4px; }}
-
-  /* ── Legend dots ── */
-  .legend-row {{
-    display: flex; flex-wrap: wrap; gap: 10px;
-    margin-top: 10px; padding: 12px 16px;
-    background: {T['card_bg']};
-    border: 1px solid {T['card_border']};
-    border-radius: 12px;
-  }}
-  .legend-item {{
-    display: flex; align-items: center; gap: 6px;
-    font-size: 0.78rem; color: {T['muted']}; font-weight: 600;
-  }}
-  .legend-dot {{
-    width: 11px; height: 11px; border-radius: 50%;
-    display: inline-block; flex-shrink: 0;
-  }}
-
-  /* ── Section label ── */
-  .section-label {{
-    font-size: 0.82rem; font-weight: 700;
-    color: {T['muted']}; letter-spacing: 0.08em;
-    text-transform: uppercase; margin-bottom: 8px;
-  }}
-
-  /* ── Destination reached banner ── */
-  .dest-banner {{
-    background: linear-gradient(90deg, #16A34A 0%, #15803D 100%);
+  /* Arrived banner */
+  .arrived {{
+    background: linear-gradient(90deg,#15803D,#166534);
     border-radius: 10px; padding: 12px 18px;
-    color: #fff; font-weight: 700; font-size: 1rem;
+    color: #fff; font-weight: 800; font-size: .95rem;
     text-align: center; margin-top: 10px;
-    box-shadow: 0 4px 14px rgba(22,163,74,0.35);
+    box-shadow: 0 4px 16px rgba(21,128,61,0.4);
   }}
 
-  /* ── Streamlit widget theming overrides ── */
-  .stSelectbox label, .stRadio label {{ color: {T['text']} !important; font-weight: 600; }}
-  .stSelectbox > div > div {{
-    background: {T['metric_bg']} !important;
-    border-color: {T['metric_brd']} !important;
+  /* Place tag chip */
+  .place-chip {{
+    display:inline-flex; align-items:center; gap:7px;
+    background:{T['info_bg']}; border:1px solid {T['info_brd']};
+    border-radius:10px; padding:8px 14px; margin-bottom:8px;
+    font-size:.82rem; font-weight:600; color:{T['text']};
+  }}
+
+  /* Section divider label */
+  .sec-label {{
+    font-size:.72rem; font-weight:800; color:{T['muted']};
+    letter-spacing:.10em; text-transform:uppercase; margin:12px 0 6px;
+  }}
+
+  /* Streamlit overrides */
+  .stTextInput input {{
+    background: {T['input_bg']} !important;
+    border-color: {T['input_brd']} !important;
     color: {T['text']} !important;
     border-radius: 10px !important;
+    font-size: .9rem !important;
   }}
-  div[data-baseweb="select"] {{
-    border-radius: 10px !important;
+  .stTextInput label {{ color:{T['muted']} !important; font-weight:600; font-size:.8rem !important; }}
+  .stTabs [data-baseweb="tab"] {{ color:{T['muted']}; font-weight:600; }}
+  .stTabs [aria-selected="true"] {{ color:{T['accent']} !important; border-bottom-color:{T['accent']} !important; }}
+  .stRadio label, .stCheckbox label {{ color:{T['text']} !important; }}
+  .stButton button {{
+    border-radius: 10px !important; font-weight: 700 !important;
   }}
-  .stTabs [data-baseweb="tab"] {{
-    color: {T['muted']}; font-weight: 600;
-  }}
-  .stTabs [aria-selected="true"] {{
-    color: {T['accent']} !important;
-    border-bottom-color: {T['accent']} !important;
-  }}
-  .stMetric label {{ color: {T['muted']} !important; }}
-  .stMetric [data-testid="stMetricValue"] {{ color: {T['accent']} !important; }}
+  div[data-baseweb="select"] {{ border-radius: 10px !important; }}
 </style>
 """, unsafe_allow_html=True)
-
-
-# ─────────────────────────────────────────────────────────────
-# LOAD SERVICE  (cached — only built once per session)
-# ─────────────────────────────────────────────────────────────
-@st.cache_resource
-def load_service() -> CampusRouteService:
-    mgr = CampusGraphManager()
-    mgr.get_or_load_graph()
-    return CampusRouteService(mgr)
-
-
-service   = load_service()
-landmarks = service.graph_manager.landmarks
-lm_map    = {lm["landmark_id"]: lm for lm in landmarks}
-lm_ids    = list(lm_map.keys())
-lm_labels = {lid: lm["name"] for lid, lm in lm_map.items()}
-
-# Initialise session start/goal to first two distinct landmarks
-if st.session_state.start_id not in lm_ids:
-    st.session_state.start_id = lm_ids[0]
-if st.session_state.goal_id not in lm_ids:
-    st.session_state.goal_id = lm_ids[3]
 
 
 # ─────────────────────────────────────────────────────────────
@@ -352,42 +251,76 @@ if st.session_state.goal_id not in lm_ids:
 # ─────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(f"""
-    <div style="text-align:center;padding:16px 0 10px;">
-      <div style="font-size:2.2rem;">🏫</div>
-      <div style="font-weight:800;font-size:1.05rem;color:{T['text']};">MITS Route Planner</div>
-      <div style="font-size:0.75rem;color:{T['muted']};">Madanapalle • A* Navigation</div>
+    <div style="text-align:center;padding:14px 0 10px;">
+      <div style="font-size:2rem;">🗺️</div>
+      <div style="font-weight:900;font-size:1.1rem;color:{T['text']};">RealRoute</div>
+      <div style="font-size:0.74rem;color:{T['muted']};">A* Real-World Navigation</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # Theme toggle
-    toggle_label = "☀️  Switch to Light Mode" if st.session_state.dark_mode else "🌙  Switch to Dark Mode"
-    if st.button(toggle_label, use_container_width=True):
+    lbl = "☀️  Light Mode" if st.session_state.dark_mode else "🌙  Dark Mode"
+    if st.button(lbl, use_container_width=True):
         st.session_state.dark_mode = not st.session_state.dark_mode
         st.rerun()
 
     st.markdown("---")
-    st.markdown(f"<div class='section-label'>⚙️ Travel Options</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='sec-label'>🚗 Travel Options</div>", unsafe_allow_html=True)
 
-    travel_mode = st.radio(
+    mode = st.radio(
         "Mode",
-        ["walking", "driving"],
-        format_func=lambda x: "🚶  Walking" if x == "walking" else "🚗  Driving",
+        ["drive", "walk"],
+        index=0 if st.session_state.travel_mode == "drive" else 1,
+        format_func=lambda x: "🚗  Driving (~40 km/h avg)" if x == "drive" else "🚶  Walking (~5 km/h)",
     )
-    avoid_stairs = st.checkbox("🪜  Avoid stairs / steps", value=False)
-    wheelchair   = st.checkbox("♿  Wheelchair-friendly path", value=False)
+    if mode != st.session_state.travel_mode:
+        st.session_state.travel_mode  = mode
+        st.session_state.route_result = None
+        st.rerun()
+
+    bench = st.checkbox("⚡  Run A* vs Dijkstra benchmark", value=st.session_state.run_benchmark)
+    if bench != st.session_state.run_benchmark:
+        st.session_state.run_benchmark = bench
 
     st.markdown("---")
-    st.markdown(f"<div class='section-label'>📐 Algorithm Info</div>", unsafe_allow_html=True)
-    st.caption("**A\\*** — Informed search. Heuristic $h(n)$ = Haversine distance. Prunes the search space for faster results.")
-    st.caption("**Dijkstra** — Uninformed BFS. $h(n)=0$. Used as baseline for optimality verification.")
+    st.markdown(f"<div class='sec-label'>📐 Algorithm</div>", unsafe_allow_html=True)
+    st.caption("**A\\*** — Haversine heuristic $h(n)$. Prunes the search space for fast results on large road graphs.")
+    st.caption("**Dijkstra** — $h(n)=0$. Exhaustive baseline. Guarantees same optimal path.")
+
+    st.markdown("---")
+    # Quick-access example routes
+    st.markdown(f"<div class='sec-label'>🧪 Example Routes</div>", unsafe_allow_html=True)
+    examples = [
+        ("Madanapalle → Tirupati",    "Madanapalle, Andhra Pradesh",    "Tirupati, Andhra Pradesh"),
+        ("Bangalore → Mysore",        "Bangalore, Karnataka",           "Mysore, Karnataka"),
+        ("Hyderabad → Warangal",      "Hyderabad, Telangana",           "Warangal, Telangana"),
+        ("Delhi → Agra",              "New Delhi, India",               "Agra, Uttar Pradesh"),
+        ("Mumbai → Pune",             "Mumbai, Maharashtra",            "Pune, Maharashtra"),
+    ]
+    for label, s, e in examples:
+        if st.button(f"📍 {label}", use_container_width=True, key=f"ex_{label}"):
+            st.session_state.start_text   = s
+            st.session_state.end_text     = e
+            st.session_state.start_sugg   = []
+            st.session_state.end_sugg     = []
+            st.session_state.route_result = None
+            # Auto-geocode the example
+            with st.spinner("Locating…"):
+                s_res = geocode(s, limit=1)
+                e_res = geocode(e, limit=1)
+            if s_res:
+                st.session_state.start_place = s_res[0]
+            if e_res:
+                st.session_state.end_place = e_res[0]
+            st.rerun()
 
     st.markdown("---")
     st.markdown(f"""
-    <div style="font-size:0.72rem;color:{T['muted']};text-align:center;line-height:1.6;">
-      23CSE109 / 23CSE208<br>AI Lab Mini-Project<br>
-      <b style="color:{T['accent']};">A* Pathfinding Engine</b>
+    <div style="font-size:.7rem;color:{T['muted']};text-align:center;line-height:1.7;">
+      Road data © OpenStreetMap<br>Map tiles © CARTO<br>
+      Algorithm: Custom A* · Haversine h(n)<br>
+      23CSE109 / 23CSE208 · MITS Madanapalle
     </div>
     """, unsafe_allow_html=True)
 
@@ -396,600 +329,577 @@ with st.sidebar:
 # HERO HEADER
 # ─────────────────────────────────────────────────────────────
 st.markdown("""
-<div class="hero-header">
-  <div class="hero-title">🏫 MITS Campus A* Route Planner</div>
-  <div class="hero-sub">Intelligent shortest-path navigation using A* informed search algorithm</div>
+<div class="hero">
+  <div class="hero-title">🗺️ RealRoute — A* Navigation Engine</div>
+  <div class="hero-sub">Type any city, village, or landmark — get real road routes powered by A* pathfinding</div>
   <div>
-    <span class="hero-badge">📍 MITS Madanapalle</span>
-    <span class="hero-badge" style="margin-left:8px;">⚡ A* Algorithm</span>
-    <span class="hero-badge" style="margin-left:8px;">🗺️ Live Map Navigation</span>
+    <span class="hero-pill">⚡ A* Algorithm</span>
+    <span class="hero-pill">🌍 OpenStreetMap Data</span>
+    <span class="hero-pill">🗺️ CARTO Map Tiles</span>
+    <span class="hero-pill">📐 Dijkstra Benchmark</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────────────────────
+# SEARCH CARD
+# ─────────────────────────────────────────────────────────────
+st.markdown('<div class="search-card">', unsafe_allow_html=True)
+st.markdown('<div class="sec-label">🔍 Enter Route</div>', unsafe_allow_html=True)
+
+col_s, col_mid, col_e, col_btn = st.columns([10, 1, 10, 3])
+
+with col_s:
+    start_input = st.text_input(
+        "🚩 Start — city, village, landmark",
+        value=st.session_state.start_text,
+        placeholder="e.g. Madanapalle, Andhra Pradesh",
+        key="start_input_box",
+    )
+
+with col_mid:
+    st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+    if st.button("⇄", help="Swap start and destination", use_container_width=True):
+        st.session_state.start_text,  st.session_state.end_text   = (
+            st.session_state.end_text,    st.session_state.start_text
+        )
+        st.session_state.start_place, st.session_state.end_place  = (
+            st.session_state.end_place,   st.session_state.start_place
+        )
+        st.session_state.route_result = None
+        st.rerun()
+
+with col_e:
+    end_input = st.text_input(
+        "🎯 Destination — city, village, landmark",
+        value=st.session_state.end_text,
+        placeholder="e.g. Tirupati, Andhra Pradesh",
+        key="end_input_box",
+    )
+
+with col_btn:
+    st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+    find_btn = st.button("🔍  Find Route", type="primary", use_container_width=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────────────────────
+# HANDLE TEXT INPUT CHANGES → fetch suggestions
+# ─────────────────────────────────────────────────────────────
+if start_input != st.session_state.start_text:
+    st.session_state.start_text  = start_input
+    st.session_state.start_place = None
+    st.session_state.route_result = None
+    if len(start_input.strip()) >= 2:
+        with st.spinner("Searching places…"):
+            st.session_state.start_sugg = geocode(start_input, limit=5)
+    else:
+        st.session_state.start_sugg = []
+
+if end_input != st.session_state.end_text:
+    st.session_state.end_text  = end_input
+    st.session_state.end_place = None
+    st.session_state.route_result = None
+    if len(end_input.strip()) >= 2:
+        with st.spinner("Searching places…"):
+            st.session_state.end_sugg = geocode(end_input, limit=5)
+    else:
+        st.session_state.end_sugg = []
+
+
+# ─────────────────────────────────────────────────────────────
+# SUGGESTIONS PANELS
+# ─────────────────────────────────────────────────────────────
+def render_suggestions(sugg_list, field: str):
+    """Render clickable suggestion buttons. field = 'start' | 'end'"""
+    if not sugg_list:
+        return
+    for i, s in enumerate(sugg_list):
+        btn_key = f"{field}_sugg_{i}_{s['lat']:.4f}"
+        if st.button(
+            f"📍  {s['short_name']}\n{s['display_name'][:80]}",
+            key=btn_key,
+            use_container_width=True,
+        ):
+            if field == "start":
+                st.session_state.start_place = s
+                st.session_state.start_text  = s["short_name"]
+                st.session_state.start_sugg  = []
+            else:
+                st.session_state.end_place = s
+                st.session_state.end_text  = s["short_name"]
+                st.session_state.end_sugg  = []
+            st.session_state.route_result = None
+            st.rerun()
+
+
+sug_col_s, sug_col_e = st.columns(2)
+with sug_col_s:
+    if st.session_state.start_sugg and not st.session_state.start_place:
+        st.markdown(f"<div class='sec-label'>Start suggestions</div>", unsafe_allow_html=True)
+        render_suggestions(st.session_state.start_sugg, "start")
+
+with sug_col_e:
+    if st.session_state.end_sugg and not st.session_state.end_place:
+        st.markdown(f"<div class='sec-label'>Destination suggestions</div>", unsafe_allow_html=True)
+        render_suggestions(st.session_state.end_sugg, "end")
+
+
+# ─────────────────────────────────────────────────────────────
+# SELECTED PLACE CHIPS
+# ─────────────────────────────────────────────────────────────
+chip_col_s, chip_col_e = st.columns(2)
+with chip_col_s:
+    sp = st.session_state.start_place
+    if sp:
+        dist_disp = ""
+        ep = st.session_state.end_place
+        if ep:
+            d = haversine_km(sp["lat"], sp["lon"], ep["lat"], ep["lon"])
+            dist_disp = f"&nbsp;&middot;&nbsp; {d:.1f} km apart"
+        muted = T["muted"]
+        st.markdown(
+            f'<div class="place-chip">🚩 <b>{sp["short_name"]}</b>'
+            f'&nbsp;<span style="color:{muted};font-size:.74rem;">'
+            f'({sp["lat"]:.4f}, {sp["lon"]:.4f})</span>'
+            f'<span style="color:{muted};font-size:.74rem;">{dist_disp}</span></div>',
+            unsafe_allow_html=True
+        )
+
+with chip_col_e:
+    ep = st.session_state.end_place
+    if ep:
+        muted = T["muted"]
+        st.markdown(
+            f'<div class="place-chip">🎯 <b>{ep["short_name"]}</b>'
+            f'&nbsp;<span style="color:{muted};font-size:.74rem;">'
+            f'({ep["lat"]:.4f}, {ep["lon"]:.4f})</span></div>',
+            unsafe_allow_html=True
+        )
+
+
+# ─────────────────────────────────────────────────────────────
+# FIND ROUTE TRIGGER
+# ─────────────────────────────────────────────────────────────
+sp = st.session_state.start_place
+ep = st.session_state.end_place
+
+if find_btn:
+    # If places aren't picked yet, auto-geocode the typed text
+    if not sp and st.session_state.start_text.strip():
+        with st.spinner(f"Locating {st.session_state.start_text}…"):
+            res = geocode(st.session_state.start_text, limit=1)
+        if res:
+            st.session_state.start_place = res[0]
+            sp = res[0]
+        else:
+            st.error(f"❌ Could not find '{st.session_state.start_text}'. Try a more specific name.")
+
+    if not ep and st.session_state.end_text.strip():
+        with st.spinner(f"Locating {st.session_state.end_text}…"):
+            res = geocode(st.session_state.end_text, limit=1)
+        if res:
+            st.session_state.end_place = res[0]
+            ep = res[0]
+        else:
+            st.error(f"❌ Could not find '{st.session_state.end_text}'. Try a more specific name.")
+
+    if sp and ep:
+        route_key = (
+            round(sp["lat"], 5), round(sp["lon"], 5),
+            round(ep["lat"], 5), round(ep["lon"], 5),
+            st.session_state.travel_mode,
+        )
+        if st.session_state.route_key != route_key:
+            st.session_state.route_key = route_key
+            d_km = haversine_km(sp["lat"], sp["lon"], ep["lat"], ep["lon"])
+            with st.spinner(
+                f"⬇️ Fetching road network ({d_km:.0f} km straight-line) · "
+                f"Running A* & Dijkstra…"
+            ):
+                result = route_realworld(
+                    start_lat=sp["lat"], start_lon=sp["lon"],
+                    end_lat=ep["lat"],   end_lon=ep["lon"],
+                    start_name=sp["short_name"],
+                    end_name=ep["short_name"],
+                    travel_mode=st.session_state.travel_mode,
+                    run_benchmark=st.session_state.run_benchmark,
+                )
+            st.session_state.route_result = result
+        st.rerun()
+
+
+# ─────────────────────────────────────────────────────────────
+# RESULTS
+# ─────────────────────────────────────────────────────────────
+result = st.session_state.route_result
+
+st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
+
+def _build_route_map(result, sp, ep) -> folium.Map:
+    coords = result["path_coords"]
+    lats   = [c[0] for c in coords]
+    lons   = [c[1] for c in coords]
+
+    fmap = folium.Map(
+        location=[(min(lats)+max(lats))/2, (min(lons)+max(lons))/2],
+        zoom_start=12,
+        tiles=T["map_tiles"],
+        attr=CARTO_ATTR,
+        prefer_canvas=True,
+    )
+    fmap.fit_bounds(
+        [[min(lats), min(lons)], [max(lats), max(lons)]],
+        padding=[40, 40]
+    )
+
+    # Route shadow
+    folium.PolyLine(coords, color="#000", weight=10, opacity=0.10).add_to(fmap)
+
+    # Animated route line
+    try:
+        AntPath(
+            locations=coords,
+            color=T["route_color"], weight=6, opacity=0.92,
+            delay=600, dash_array=[20, 40],
+            tooltip=f"{result['distance_km']} km · {result['duration']}",
+        ).add_to(fmap)
+    except Exception:
+        folium.PolyLine(coords, color=T["route_color"], weight=6, opacity=0.9).add_to(fmap)
+
+    # Start marker
+    folium.Marker(
+        [sp["lat"], sp["lon"]],
+        popup=folium.Popup(
+            f"<b>🚩 Start</b><br>{sp['short_name']}<br>"
+            f"<small>{sp['lat']:.5f}, {sp['lon']:.5f}</small>",
+            max_width=200
+        ),
+        tooltip=f"🚩 {sp['short_name']}",
+        icon=folium.Icon(color="green", icon="play", prefix="fa"),
+    ).add_to(fmap)
+
+    # End marker
+    folium.Marker(
+        [ep["lat"], ep["lon"]],
+        popup=folium.Popup(
+            f"<b>🎯 Destination</b><br>{ep['short_name']}<br>"
+            f"<small>{ep['lat']:.5f}, {ep['lon']:.5f}</small>",
+            max_width=200
+        ),
+        tooltip=f"🎯 {ep['short_name']}",
+        icon=folium.Icon(color="red", icon="flag", prefix="fa"),
+    ).add_to(fmap)
+
+    # Waypoint dots on route (every ~5th node, skip endpoints)
+    step = max(1, len(coords) // 30)
+    for i in range(step, len(coords) - step, step):
+        folium.CircleMarker(
+            location=coords[i],
+            radius=3, color=T["route_color"],
+            fill=True, fill_opacity=0.5, weight=1,
+        ).add_to(fmap)
+
+    return fmap
+
+
+def _build_empty_map(center=(20.5937, 78.9629), zoom=5) -> folium.Map:
+    """Default India-centered map when no route is computed."""
+    return folium.Map(
+        location=list(center),
+        zoom_start=zoom,
+        tiles=T["map_tiles"],
+        attr=CARTO_ATTR,
+        prefer_canvas=True,
+    )
 
 
 # ─────────────────────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────────────────────
-tab_nav, tab_bench, tab_learn = st.tabs([
-    "🧭  Route Navigator",
-    "📊  A* vs Dijkstra",
-    "🔬  Algorithm Visualiser",
+tab_map, tab_dirs, tab_algo = st.tabs([
+    "🗺️  Route Map",
+    "📋  Directions",
+    "📊  Algorithm Analysis",
 ])
 
-
-# ─────────────────────────────────────────────────────────────
-# HELPER — cached route
-# ─────────────────────────────────────────────────────────────
-def get_route(start: str, goal: str, mode: str, stairs: bool, wc: bool):
-    key = ("route", start, goal, mode, stairs, wc)
-    if key not in st.session_state:
-        st.session_state[key] = service.compute_route(
-            start, goal, mode=mode,
-            avoid_stairs=stairs, wheelchair_friendly=wc,
-            include_benchmark=True,
-        )
-    return st.session_state[key]
-
-
-# ─────────────────────────────────────────────────────────────
-# HELPER — landmark info card
-# ─────────────────────────────────────────────────────────────
-def lm_info_card(lm_id: str, role: str) -> None:
-    lm   = lm_map.get(lm_id, {})
-    icon = "🚩" if role == "Start" else "🎯"
-    cat  = lm.get("category", "")
-    st.markdown(
-        f'<div class="lm-card">'
-        f'<span class="cat-tag">{cat}</span> '
-        f'<span style="float:right;font-size:1.3rem;">{icon}</span><br>'
-        f'<div class="lm-name">{lm.get("name","")}</div>'
-        f'<div class="lm-desc">{lm.get("description","")}</div>'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-
-
-# ─────────────────────────────────────────────────────────────
-# HELPER — build Folium map
-# ─────────────────────────────────────────────────────────────
-CATEGORY_COLORS = {
-    "Academic":       "#2563EB",
-    "Administration": "#7C3AED",
-    "Dining":         "#EA580C",
-    "Sports":         "#DC2626",
-    "Residential":    "#6B7280",
-    "Research":       "#0891B2",
-    "Entrance":       "#16A34A",
-    "Facility":       "#CA8A04",
-}
-
-CATEGORY_FOLIUM_COLORS = {
-    "Academic":       "blue",
-    "Administration": "purple",
-    "Dining":         "orange",
-    "Sports":         "darkred",
-    "Residential":    "gray",
-    "Research":       "cadetblue",
-    "Entrance":       "green",
-    "Facility":       "beige",
-}
-
-def build_map(result, start_id: str, goal_id: str, tiles: str) -> folium.Map:
-    coords = result["path_coordinates"]
-    s_lm   = lm_map.get(start_id, {})
-    g_lm   = lm_map.get(goal_id,  {})
-
-    # Compute bounds to auto-fit the view
-    lats = [c[0] for c in coords]
-    lons = [c[1] for c in coords]
-    center_lat = (min(lats) + max(lats)) / 2
-    center_lon = (min(lons) + max(lons)) / 2
-
-    fmap = folium.Map(
-        location=[center_lat, center_lon],
-        zoom_start=17,
-        tiles=tiles,
-        attr=CARTO_ATTRIBUTION,
-        prefer_canvas=True,
-    )
-
-    # Fit bounds to route
-    fmap.fit_bounds([[min(lats), min(lons)], [max(lats), max(lons)]], padding=[40, 40])
-
-    # ── Animated route polyline (AntPath for travel animation) ──
-    try:
-        AntPath(
-            locations=coords,
-            color=T["route_color"],
-            weight=6,
-            opacity=0.9,
-            delay=800,
-            dash_array=[15, 30],
-            tooltip=f"Route · {result['distance_meters']:.0f} m · {result['estimated_time']}",
-        ).add_to(fmap)
-    except Exception:
-        # Fallback to plain PolyLine if AntPath fails
-        folium.PolyLine(
-            coords, color=T["route_color"], weight=6, opacity=0.88,
-            tooltip=f"Route · {result['distance_meters']:.0f} m · {result['estimated_time']}",
-        ).add_to(fmap)
-
-    # ── Route shadow (subtle thicker line underneath) ──
-    folium.PolyLine(
-        coords, color="#000000", weight=10, opacity=0.12,
-    ).add_to(fmap)
-
-    # ── Start marker (pulsing green) ──
-    start_popup_html = f"""
-    <div style="font-family:sans-serif;min-width:160px;text-align:center;">
-      <div style="font-weight:700;font-size:1rem;color:#16A34A;">🚩 START</div>
-      <div style="font-weight:600;margin:4px 0;">{s_lm.get('name','')}</div>
-      <div style="font-size:0.78rem;color:#666;">{s_lm.get('category','')}</div>
-    </div>
-    """
-    folium.Marker(
-        coords[0],
-        popup=folium.Popup(start_popup_html, max_width=200),
-        tooltip=f"🚩 Start: {s_lm.get('name','')}",
-        icon=folium.Icon(color="green", icon="play", prefix="fa"),
-    ).add_to(fmap)
-
-    # ── Destination marker (red flag) ──
-    goal_popup_html = f"""
-    <div style="font-family:sans-serif;min-width:160px;text-align:center;">
-      <div style="font-weight:700;font-size:1rem;color:#DC2626;">🎯 DESTINATION</div>
-      <div style="font-weight:600;margin:4px 0;">{g_lm.get('name','')}</div>
-      <div style="font-size:0.78rem;color:#666;">{g_lm.get('category','')}</div>
-    </div>
-    """
-    folium.Marker(
-        coords[-1],
-        popup=folium.Popup(goal_popup_html, max_width=200),
-        tooltip=f"🎯 Destination: {g_lm.get('name','')}",
-        icon=folium.Icon(color="red", icon="flag", prefix="fa"),
-    ).add_to(fmap)
-
-    # ── Other campus landmarks (clickable: Set as Start / Destination) ──
-    for lm in landmarks:
-        if lm["landmark_id"] in (start_id, goal_id):
-            continue
-        lid   = lm["landmark_id"]
-        color = CATEGORY_FOLIUM_COLORS.get(lm.get("category", ""), "gray")
-        popup_html = f"""
-        <div style="font-family:sans-serif;min-width:180px;">
-          <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">{lm['name']}</div>
-          <div style="font-size:0.78rem;color:#666;margin-bottom:8px;">{lm.get('category','')}</div>
-          <div style="font-size:0.76rem;color:#555;margin-bottom:10px;">{lm.get('description','')}</div>
-          <div style="display:flex;gap:6px;">
-            <a href="?set_start={lid}" target="_self"
-               style="flex:1;text-align:center;background:#16A34A;color:#fff;padding:5px 8px;
-                      border-radius:6px;text-decoration:none;font-size:0.76rem;font-weight:700;">
-              🚩 Set Start
-            </a>
-            <a href="?set_goal={lid}" target="_self"
-               style="flex:1;text-align:center;background:#DC2626;color:#fff;padding:5px 8px;
-                      border-radius:6px;text-decoration:none;font-size:0.76rem;font-weight:700;">
-              🎯 Set Dest
-            </a>
+# ── TAB 1: MAP ───────────────────────────────────────────────
+with tab_map:
+    if result and result["status"] == "SUCCESS":
+        # Metrics row
+        cmp = result.get("comparison") or {}
+        st.markdown(f"""
+        <div class="metrics-grid">
+          <div class="m-card">
+            <div class="m-icon">📏</div>
+            <div class="m-value">{result['distance_km']} km</div>
+            <div class="m-label">Route Distance</div>
+            <div class="m-sub">{result['distance_m']:.0f} m total</div>
+          </div>
+          <div class="m-card">
+            <div class="m-icon">⏱️</div>
+            <div class="m-value">{result['duration']}</div>
+            <div class="m-label">Est. Travel Time</div>
+            <div class="m-sub">{'~40 km/h avg' if st.session_state.travel_mode=='drive' else '~5 km/h walking'}</div>
+          </div>
+          <div class="m-card">
+            <div class="m-icon">⚡</div>
+            <div class="m-value">{result['astar']['nodes_expanded']:,}</div>
+            <div class="m-label">A* Nodes Explored</div>
+            <div class="m-sub">{result['astar']['execution_time_ms']:.1f} ms</div>
+          </div>
+          <div class="m-card">
+            <div class="m-icon">🎯</div>
+            <div class="m-value">{cmp.get('expansion_reduction_pct', '—')}%</div>
+            <div class="m-label">Search Reduction</div>
+            <div class="m-sub">vs Dijkstra baseline</div>
           </div>
         </div>
-        """
-        folium.CircleMarker(
-            location=[lm["latitude"], lm["longitude"]],
-            radius=7,
-            color=color,
-            fill=True,
-            fill_color=color,
-            fill_opacity=0.75,
-            weight=2,
-            popup=folium.Popup(popup_html, max_width=220),
-            tooltip=f"{lm['name']} ({lm.get('category','')})",
-        ).add_to(fmap)
+        """, unsafe_allow_html=True)
 
-    return fmap
-
-
-def build_empty_map(tiles: str) -> folium.Map:
-    """Map with all landmarks shown but no route."""
-    fmap = folium.Map(
-        location=list(CAMPUS_CENTER),
-        zoom_start=17,
-        tiles=tiles,
-        attr=CARTO_ATTRIBUTION,
-        prefer_canvas=True,
-    )
-    for lm in landmarks:
-        lid   = lm["landmark_id"]
-        color = CATEGORY_FOLIUM_COLORS.get(lm.get("category", ""), "gray")
-        popup_html = f"""
-        <div style="font-family:sans-serif;min-width:180px;">
-          <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px;">{lm['name']}</div>
-          <div style="font-size:0.78rem;color:#666;margin-bottom:8px;">{lm.get('category','')}</div>
-          <div style="font-size:0.76rem;color:#555;margin-bottom:10px;">{lm.get('description','')}</div>
-          <div style="display:flex;gap:6px;">
-            <a href="?set_start={lid}" target="_self"
-               style="flex:1;text-align:center;background:#16A34A;color:#fff;padding:5px 8px;
-                      border-radius:6px;text-decoration:none;font-size:0.76rem;font-weight:700;">
-              🚩 Set Start
-            </a>
-            <a href="?set_goal={lid}" target="_self"
-               style="flex:1;text-align:center;background:#DC2626;color:#fff;padding:5px 8px;
-                      border-radius:6px;text-decoration:none;font-size:0.76rem;font-weight:700;">
-              🎯 Set Dest
-            </a>
-          </div>
-        </div>
-        """
-        folium.CircleMarker(
-            location=[lm["latitude"], lm["longitude"]],
-            radius=8,
-            color=color,
-            fill=True,
-            fill_color=color,
-            fill_opacity=0.80,
-            weight=2.5,
-            popup=folium.Popup(popup_html, max_width=220),
-            tooltip=f"{lm['name']} ({lm.get('category','')})",
-        ).add_to(fmap)
-    return fmap
-
-
-# ══════════════════════════════════════════════════════════════
-# TAB 1 — ROUTE NAVIGATOR
-# ══════════════════════════════════════════════════════════════
-with tab_nav:
-
-    # ── Route Input Card ─────────────────────────────────────
-    st.markdown('<div class="route-card">', unsafe_allow_html=True)
-    st.markdown('<div class="route-card-title">📍 Select Route</div>', unsafe_allow_html=True)
-
-    col_s, col_swap, col_g = st.columns([10, 1, 10])
-
-    with col_s:
-        start_idx = lm_ids.index(st.session_state.start_id) if st.session_state.start_id in lm_ids else 0
-        new_start = st.selectbox(
-            "🚩 Start Location",
-            lm_ids,
-            index=start_idx,
-            format_func=lambda x: f"  {lm_labels[x]}",
-            key="start_sel",
+        # Network info banner
+        st.markdown(
+            f'<div style="font-size:.78rem;color:{T["muted"]};padding:5px 2px;margin-bottom:8px;">'
+            f'🌐 <b>Network:</b> {result["network_desc"]} &nbsp;·&nbsp; '
+            f'<b>Graph:</b> {result["graph_nodes"]:,} nodes, {result["graph_edges"]:,} edges &nbsp;·&nbsp; '
+            f'<b>Path:</b> {len(result["path_coords"]):,} coordinates'
+            f'</div>',
+            unsafe_allow_html=True
         )
-        if new_start != st.session_state.start_id:
-            st.session_state.start_id = new_start
-            st.rerun()
 
-    with col_swap:
-        st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
-        if st.button("⇄", help="Swap Start and Destination", use_container_width=True):
-            st.session_state.start_id, st.session_state.goal_id = (
-                st.session_state.goal_id, st.session_state.start_id
-            )
-            st.rerun()
+        fmap = _build_route_map(result, sp, ep)
+        components.html(fmap._repr_html_(), height=560)
 
-    with col_g:
-        goal_idx = lm_ids.index(st.session_state.goal_id) if st.session_state.goal_id in lm_ids else 3
-        new_goal = st.selectbox(
-            "🎯 Destination",
-            lm_ids,
-            index=goal_idx,
-            format_func=lambda x: f"  {lm_labels[x]}",
-            key="goal_sel",
+        for w in result.get("warnings", []):
+            st.warning(w)
+
+    elif result and result["status"] == "FAILED":
+        st.error(f"❌ {result.get('error', 'Route failed.')}")
+        for w in result.get("warnings", []):
+            st.warning(w)
+        st.info(
+            "💡 Tips:\n"
+            "- Try a **more specific** place name (add state/country)\n"
+            "- Switch travel mode: some areas have no drive roads\n"
+            "- Very remote areas may have sparse road data"
         )
-        if new_goal != st.session_state.goal_id:
-            st.session_state.goal_id = new_goal
-            st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    start_id = st.session_state.start_id
-    goal_id  = st.session_state.goal_id
-
-    # ── Landmark Info Cards ───────────────────────────────────
-    ic1, ic2 = st.columns(2)
-    with ic1:
-        lm_info_card(start_id, "Start")
-    with ic2:
-        lm_info_card(goal_id,  "Destination")
-
-    # ── Same location guard ───────────────────────────────────
-    if start_id == goal_id:
-        st.info("📍 Start and destination are the same — select different locations to find a route.")
-        st.markdown("<div class='section-label' style='margin-top:16px;'>🗺️ Campus Map — Click a marker to set as Start or Destination</div>", unsafe_allow_html=True)
-        components.html(build_empty_map(T["map_tiles"])._repr_html_(), height=500)
+        components.html(_build_empty_map()._repr_html_(), height=480)
     else:
-        result = get_route(start_id, goal_id, travel_mode, avoid_stairs, wheelchair)
+        # Empty state — show India map with instructions
+        st.markdown(
+            f'<div style="text-align:center;padding:20px 0 12px;color:{T["muted"]};">'
+            f'<div style="font-size:2.5rem;margin-bottom:8px;">🗺️</div>'
+            f'<div style="font-size:1rem;font-weight:700;color:{T["text"]};">Enter a Start and Destination above</div>'
+            f'<div style="font-size:.85rem;margin-top:4px;">Then click <b>Find Route</b> to compute the A* optimal path</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+        components.html(_build_empty_map()._repr_html_(), height=500)
 
-        if result["status"] == "SUCCESS":
-            # ── Metric Cards ──────────────────────────────────
-            cmp = result.get("comparison") or {}
-            red = cmp.get("expansion_reduction_pct", 0)
+
+# ── TAB 2: DIRECTIONS ────────────────────────────────────────
+with tab_dirs:
+    if result and result["status"] == "SUCCESS":
+        dirs = result["directions"]
+        total = len(dirs)
+
+        st.markdown(
+            f'<div class="sec-label">Turn-by-Turn Directions — {total} steps · {result["distance_km"]} km</div>',
+            unsafe_allow_html=True
+        )
+
+        # Journey start
+        st.markdown(
+            f'<div style="padding:9px 14px;background:{T["info_bg"]};border:1px solid {T["info_brd"]};"'
+            f'border-radius:10px;margin-bottom:8px;font-size:.82rem;color:{T["text"]};">'
+            f'📍 <b>Starting at</b> {result["start_name"]}</div>',
+            unsafe_allow_html=True
+        )
+
+        # Directions in a scrollable area
+        # We chunk into groups of 50 for performance
+        MAX_STEPS_SHOWN = 100
+        shown = dirs[:MAX_STEPS_SHOWN]
+
+        for step in shown:
+            seg_km = step["segment_meters"] / 1000
+            cum_km = step["cumulative_meters"] / 1000
+            st.markdown(
+                f'<div class="step-wrap">'
+                f'<span class="step-num">{step["step_number"]}</span>'
+                f'<span class="step-street">{step["street"]}</span>'
+                f'<div class="step-detail">'
+                f'{step["segment_meters"]:.0f} m'
+                f' &nbsp;·&nbsp; total {cum_km:.2f} km'
+                f'</div></div>',
+                unsafe_allow_html=True,
+            )
+
+        if len(dirs) > MAX_STEPS_SHOWN:
+            st.info(f"Showing first {MAX_STEPS_SHOWN} of {total} steps. Route continues…")
+
+        st.markdown(
+            f'<div class="arrived">🏁 Arrived at {result["end_name"]} · {result["distance_km"]} km</div>',
+            unsafe_allow_html=True
+        )
+    else:
+        st.info("🗺️ Compute a route first to see turn-by-turn directions.")
+
+
+# ── TAB 3: ALGORITHM ANALYSIS ────────────────────────────────
+with tab_algo:
+    if result and result["status"] == "SUCCESS":
+        astar_r = result.get("astar", {})
+        dijk_r  = result.get("dijkstra")
+        cmp     = result.get("comparison")
+
+        if cmp:
+            st.markdown(
+                f'<div style="font-size:1.1rem;font-weight:800;color:{T["text"]};margin-bottom:14px;">'
+                f'⚡ A* vs 🔵 Dijkstra — Live Comparison</div>',
+                unsafe_allow_html=True
+            )
+
+            # Side-by-side algorithm cards
+            ac, dc = st.columns(2)
+            with ac:
+                st.markdown(f"""
+                <div class="m-card" style="text-align:left;padding:18px 20px;">
+                  <div style="font-size:1rem;font-weight:800;color:{T['accent']};margin-bottom:10px;">⚡ A* Algorithm</div>
+                  <div style="color:{T['muted']};font-size:.8rem;">Nodes Explored</div>
+                  <div style="font-size:1.5rem;font-weight:800;color:{T['text']};">{astar_r.get('nodes_expanded',0):,}</div>
+                  <div style="color:{T['muted']};font-size:.8rem;margin-top:8px;">Execution Time</div>
+                  <div style="font-size:1.3rem;font-weight:800;color:{T['text']};">{astar_r.get('execution_time_ms',0):.1f} ms</div>
+                  <div style="color:{T['muted']};font-size:.8rem;margin-top:8px;">Heuristic</div>
+                  <div style="font-size:.9rem;color:{T['text']};">h(n) = Haversine distance</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with dc:
+                dijk_nodes = dijk_r.get('nodes_expanded', 0) if dijk_r else '—'
+                dijk_ms    = f"{dijk_r.get('execution_time_ms', 0):.1f}" if dijk_r else '—'
+                st.markdown(f"""
+                <div class="m-card" style="text-align:left;padding:18px 20px;">
+                  <div style="font-size:1rem;font-weight:800;color:#818CF8;margin-bottom:10px;">🔵 Dijkstra</div>
+                  <div style="color:{T['muted']};font-size:.8rem;">Nodes Explored</div>
+                  <div style="font-size:1.5rem;font-weight:800;color:{T['text']};"> {dijk_nodes:,}</div>
+                  <div style="color:{T['muted']};font-size:.8rem;margin-top:8px;">Execution Time</div>
+                  <div style="font-size:1.3rem;font-weight:800;color:{T['text']};">{dijk_ms} ms</div>
+                  <div style="color:{T['muted']};font-size:.8rem;margin-top:8px;">Heuristic</div>
+                  <div style="font-size:.9rem;color:{T['text']};">h(n) = 0 (uninformed)</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Key metrics
             st.markdown(f"""
-            <div class="metric-row">
-              <div class="metric-card">
-                <div class="metric-icon">📏</div>
-                <div class="metric-value">{result['distance_meters']:.0f} m</div>
-                <div class="metric-label">Total Distance</div>
-                <div class="metric-delta">{result.get('distance_km','')}</div>
+            <div class="metrics-grid" style="margin-top:14px;">
+              <div class="m-card">
+                <div class="m-icon">📉</div>
+                <div class="m-value">{cmp['expansion_reduction_pct']}%</div>
+                <div class="m-label">Node Reduction</div>
+                <div class="m-sub">A* explores fewer nodes</div>
               </div>
-              <div class="metric-card">
-                <div class="metric-icon">⏱️</div>
-                <div class="metric-value">{result['estimated_time']}</div>
-                <div class="metric-label">Est. Travel Time</div>
-                <div class="metric-delta">@ 3.2 km/h walking</div>
+              <div class="m-card">
+                <div class="m-icon">🚀</div>
+                <div class="m-value">{cmp['speedup']}×</div>
+                <div class="m-label">Speedup</div>
+                <div class="m-sub">A* is faster by this factor</div>
               </div>
-              <div class="metric-card">
-                <div class="metric-icon">⚡</div>
-                <div class="metric-value">{result['astar']['nodes_expanded']}</div>
-                <div class="metric-label">A* Nodes Explored</div>
-                <div class="metric-delta">{result['astar']['execution_time_ms']} ms</div>
+              <div class="m-card">
+                <div class="m-icon">✅</div>
+                <div class="m-value">{'100%' if cmp['is_optimal_match'] else '⚠️'}</div>
+                <div class="m-label">Optimality</div>
+                <div class="m-sub">{'Same distance ✓' if cmp['is_optimal_match'] else 'Distance mismatch!'}</div>
               </div>
-              <div class="metric-card">
-                <div class="metric-icon">🎯</div>
-                <div class="metric-value">{red}%</div>
-                <div class="metric-label">Search Reduction</div>
-                <div class="metric-delta">vs Dijkstra baseline</div>
+              <div class="m-card">
+                <div class="m-icon">🔢</div>
+                <div class="m-value">{cmp['nodes_expanded_diff']:,}</div>
+                <div class="m-label">Nodes Saved</div>
+                <div class="m-sub">Dijkstra − A* expansions</div>
               </div>
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("---")
-            map_col, dir_col = st.columns([3, 2])
+            # Bar chart comparison
+            st.markdown(f"<div class='sec-label' style='margin-top:14px;'>Node Expansion Comparison</div>", unsafe_allow_html=True)
+            chart_df = pd.DataFrame({
+                "Algorithm": ["A*", "Dijkstra"],
+                "Nodes Explored": [
+                    cmp["astar_nodes"],
+                    cmp["dijkstra_nodes"]
+                ],
+            }).set_index("Algorithm")
+            st.bar_chart(chart_df, color=[T["accent"]])
 
-            # ── Interactive Map ───────────────────────────────
-            with map_col:
-                st.markdown(
-                    "<div class='section-label'>🗺️ Campus Route Map — Click markers to change start/destination</div>",
-                    unsafe_allow_html=True
-                )
-                fmap = build_map(result, start_id, goal_id, T["map_tiles"])
-                components.html(fmap._repr_html_(), height=500)
-
-                # Category legend
-                legend_items = "".join([
-                    f'<span class="legend-item"><span class="legend-dot" style="background:{color};"></span>{cat}</span>'
-                    for cat, color in CATEGORY_COLORS.items()
-                ])
-                st.markdown(
-                    f'<div class="legend-row">'
-                    f'<span class="legend-item"><b style="color:{T["muted"]};">Legend:</b></span>'
-                    f'{legend_items}'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-
-            # ── Directions Panel ──────────────────────────────
-            with dir_col:
-                st.markdown("<div class='section-label'>🚶 Turn-by-Turn Directions</div>", unsafe_allow_html=True)
-                g_lm = lm_map.get(goal_id, {})
-                s_lm = lm_map.get(start_id, {})
-
-                with st.container(height=440):
-                    # Journey start label
-                    st.markdown(
-                        f'<div style="padding:8px 12px;background:{T["step_bg"]};border-radius:8px;'
-                        f'margin-bottom:8px;font-size:0.82rem;color:{T["muted"]};">'
-                        f'📍 Starting from <b>{s_lm.get("name","")}</b></div>',
-                        unsafe_allow_html=True
-                    )
-                    for step in result["directions"]:
-                        st.markdown(
-                            f'<div class="step-box">'
-                            f'<span class="step-num">{step["step_number"]}</span>'
-                            f'<span class="step-street">{step["street"]}</span>'
-                            f'<div class="step-detail">'
-                            f'→ <b>{step["to_node"]}</b>'
-                            f'&nbsp;&nbsp;{step["segment_meters"]} m'
-                            f'&nbsp;·&nbsp; total {step["cumulative_meters"]} m'
-                            f'</div></div>',
-                            unsafe_allow_html=True,
-                        )
-                    st.markdown(
-                        f'<div class="dest-banner">🏁 Arrived at {g_lm.get("name", "Destination")}</div>',
-                        unsafe_allow_html=True
-                    )
-
-            # ── Warnings ──────────────────────────────────────
-            for w in result.get("warnings", []):
-                st.warning(w)
+            # Admissibility explanation
+            st.markdown(f"""
+            <div style="background:{T['info_bg']};border:1px solid {T['info_brd']};
+                        border-radius:12px;padding:14px 18px;margin-top:10px;font-size:.83rem;color:{T['text']};">
+              <b>🔬 Why A* is faster:</b> The Haversine heuristic $h(n)$ estimates the
+              straight-line great-circle distance to the goal. Because $h(n) \\le h^*(n)$
+              (never overestimates the true cost), A* is <b>admissible</b> — it prunes
+              unpromising branches early, expanding only {cmp['expansion_reduction_pct']}% fewer
+              nodes than Dijkstra while guaranteeing the same optimal path.
+            </div>
+            """, unsafe_allow_html=True)
 
         else:
-            st.error(f"❌ {result.get('error', 'Route calculation failed.')}")
-            for w in result.get("warnings", []):
-                st.warning(w)
-            # Still show map so user can interact
-            st.markdown("<div class='section-label'>🗺️ Campus Map</div>", unsafe_allow_html=True)
-            components.html(build_empty_map(T["map_tiles"])._repr_html_(), height=460)
+            st.info("Enable 'Run A* vs Dijkstra benchmark' in the sidebar to see the comparison.")
 
+        # Route metadata
+        st.markdown(f"<div class='sec-label' style='margin-top:16px;'>Route Metadata</div>", unsafe_allow_html=True)
+        meta_df = pd.DataFrame([{
+            "Property":          "Start",
+            "Value":             f"{result['start_name']} ({sp['lat']:.5f}, {sp['lon']:.5f})"
+        }, {
+            "Property":          "End",
+            "Value":             f"{result['end_name']} ({ep['lat']:.5f}, {ep['lon']:.5f})"
+        }, {
+            "Property":          "Straight-line",
+            "Value":             f"{haversine_km(sp['lat'], sp['lon'], ep['lat'], ep['lon']):.2f} km"
+        }, {
+            "Property":          "Route distance",
+            "Value":             f"{result['distance_km']} km ({result['distance_m']:.0f} m)"
+        }, {
+            "Property":          "Est. duration",
+            "Value":             result['duration']
+        }, {
+            "Property":          "Network type",
+            "Value":             result['network_desc']
+        }, {
+            "Property":          "Graph size",
+            "Value":             f"{result['graph_nodes']:,} nodes · {result['graph_edges']:,} edges"
+        }, {
+            "Property":          "Path waypoints",
+            "Value":             f"{len(result['path_coords']):,} coordinates"
+        }, {
+            "Property":          "Snap dist (start)",
+            "Value":             f"{result['snap_dist_start_m']} m from road"
+        }, {
+            "Property":          "Snap dist (end)",
+            "Value":             f"{result['snap_dist_end_m']} m from road"
+        }])
+        st.dataframe(meta_df, use_container_width=True, hide_index=True)
 
-# ══════════════════════════════════════════════════════════════
-# TAB 2 — BENCHMARK
-# ══════════════════════════════════════════════════════════════
-with tab_bench:
-    st.markdown(f"""
-    <div style="margin-bottom:16px;">
-      <div style="font-size:1.4rem;font-weight:800;color:{T['text']};">📊 A* vs Dijkstra — Performance Benchmark</div>
-      <div style="font-size:0.88rem;color:{T['muted']};margin-top:4px;">
-        Verifies heuristic admissibility $h(n) \\le h^*(n)$ and measures
-        search space reduction across representative campus routes.
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if st.button("⚡  Run Full Benchmark", type="primary") or "bench_df" not in st.session_state:
-        BENCH_PAIRS = [
-            ("MAIN_GATE",   "CSE_BLOCK"),
-            ("MAIN_GATE",   "CANTEEN"),
-            ("MAIN_GATE",   "SPORTS_COMPLEX"),
-            ("MAIN_GATE",   "PLAYGROUND"),
-            ("ADMIN_BLOCK", "INNOVATION_HUB"),
-            ("MITS_LIB",    "BOYS_HOSTEL"),
-            ("GIRLS_HOSTEL","CANTEEN"),
-            ("AUDITORIUM",  "ECE_BLOCK"),
-            ("MECH_BLOCK",  "SPORTS_COMPLEX"),
-            ("MAIN_GATE",   "BOYS_HOSTEL"),
-        ]
-        rows = []
-        with st.spinner("Running benchmark across 10 campus routes…"):
-            for s, g in BENCH_PAIRS:
-                r = service.compute_route(s, g, mode="walking", include_benchmark=True)
-                if r["status"] == "SUCCESS":
-                    c = r["comparison"]
-                    rows.append({
-                        "Route":           f"{lm_map[s]['name']}  →  {lm_map[g]['name']}",
-                        "Dist (m)":        round(r["distance_meters"], 1),
-                        "A* Nodes":        c["astar_nodes"],
-                        "Dijkstra Nodes":  c["dijkstra_nodes"],
-                        "Reduction (%)":   c["expansion_reduction_pct"],
-                        "A* Time (ms)":    c["astar_time_ms"],
-                        "D* Time (ms)":    c["dijkstra_time_ms"],
-                        "Optimal ✓":       "✅" if c["is_optimal_match"] else "❌",
-                    })
-        st.session_state["bench_df"] = pd.DataFrame(rows)
-
-    df    = st.session_state["bench_df"]
-    tot_a = int(df["A* Nodes"].sum())
-    tot_d = int(df["Dijkstra Nodes"].sum())
-    red   = round((tot_d - tot_a) / tot_d * 100, 1) if tot_d else 0
-
-    st.markdown(f"""
-    <div class="metric-row">
-      <div class="metric-card">
-        <div class="metric-icon">⚡</div>
-        <div class="metric-value">{tot_a}</div>
-        <div class="metric-label">A* Total Nodes</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon">🔵</div>
-        <div class="metric-value">{tot_d}</div>
-        <div class="metric-label">Dijkstra Total Nodes</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon">📉</div>
-        <div class="metric-value">{red}%</div>
-        <div class="metric-label">Search Reduction</div>
-        <div class="metric-delta">{'≥ 40% target ✓' if red >= 40 else 'Below 40% target'}</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-icon">🎯</div>
-        <div class="metric-value">100%</div>
-        <div class="metric-label">Optimality Match</div>
-        <div class="metric-delta">All paths identical</div>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<div class='section-label' style='margin-top:8px;'>Results Table</div>", unsafe_allow_html=True)
-    st.dataframe(df, use_container_width=True, hide_index=True)
-
-    st.markdown("<div class='section-label' style='margin-top:16px;'>Nodes Expanded — A* vs Dijkstra</div>", unsafe_allow_html=True)
-    st.bar_chart(df.set_index("Route")[["A* Nodes", "Dijkstra Nodes"]])
-
-    dl1, dl2 = st.columns(2)
-    with dl1:
-        st.download_button(
-            "📥  Download CSV",
-            df.to_csv(index=False),
-            "benchmark.csv",
-            "text/csv",
-            use_container_width=True,
-        )
-    with dl2:
-        st.download_button(
-            "📥  Download JSON",
-            df.to_json(orient="records", indent=2),
-            "benchmark.json",
-            "application/json",
-            use_container_width=True,
-        )
-
-
-# ══════════════════════════════════════════════════════════════
-# TAB 3 — ALGORITHM VISUALISER
-# ══════════════════════════════════════════════════════════════
-with tab_learn:
-    st.markdown(f"""
-    <div style="margin-bottom:16px;">
-      <div style="font-size:1.4rem;font-weight:800;color:{T['text']};">🔬 Step-by-Step Algorithm Visualiser</div>
-      <div style="font-size:0.88rem;color:{T['muted']};margin-top:4px;">
-        Watch how A\\* and Dijkstra explore the campus graph node-by-node.
-        Each step shows the current node's $g$, $h$, and $f$ scores.
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    lc1, lc2, lc3 = st.columns([5, 5, 3])
-    with lc1:
-        vis_start = st.selectbox(
-            "🚩 From", list(lm_labels),
-            index=0, format_func=lambda x: lm_labels[x], key="vis_s"
-        )
-    with lc2:
-        vis_goal = st.selectbox(
-            "🎯 To", list(lm_labels),
-            index=3, format_func=lambda x: lm_labels[x], key="vis_g"
-        )
-    with lc3:
-        algo = st.radio("Algorithm", ["A*", "Dijkstra"], horizontal=True)
-
-    trace_key = ("trace", vis_start, vis_goal, algo)
-    if trace_key not in st.session_state:
-        s_node, _, _ = service.graph_manager.snap_coordinate_to_node(
-            lm_map[vis_start]["latitude"], lm_map[vis_start]["longitude"]
-        )
-        g_node, _, _ = service.graph_manager.snap_coordinate_to_node(
-            lm_map[vis_goal]["latitude"],  lm_map[vis_goal]["longitude"]
-        )
-        st.session_state[trace_key] = record_search_trace(
-            service.graph, s_node, g_node, algorithm=algo
-        )
-
-    trace = st.session_state[trace_key]
-
-    if not trace:
-        st.warning("No steps to display for this selection.")
     else:
-        step_num = st.slider("🎚️  Step", 1, len(trace), 1)
-        ev = trace[step_num - 1]
+        st.info("📊 Compute a route first to see the algorithm analysis.")
 
-        # Progress bar
-        progress_pct = step_num / len(trace)
-        st.progress(progress_pct)
-
-        # Event badge
-        badge_map = {
-            "start":        ("🟡", "Start Node",    "#CA8A04"),
-            "expand":       ("🔵", "Expanding",      "#2563EB"),
-            "goal_reached": ("🟢", "Goal Reached!",  "#16A34A"),
-        }
-        icon, label, bcolor = badge_map.get(ev["event"], ("⚪", ev["event"], "#6B7280"))
-
-        st.markdown(
-            f'<div style="background:{bcolor}22;border:1px solid {bcolor}55;border-radius:10px;'
-            f'padding:12px 18px;margin-bottom:14px;">'
-            f'<span style="font-size:1.3rem;">{icon}</span>'
-            f'&nbsp;&nbsp;<b style="color:{bcolor};font-size:1rem;">{label}</b>'
-            f'&nbsp;—&nbsp; Step {ev["step"]} / {len(trace)}'
-            f'<div style="font-size:0.82rem;color:{T["muted"]};margin-top:4px;">{ev["description"]}</div>'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-
-        # Score metrics
-        sc1, sc2, sc3, sc4 = st.columns(4)
-        sc1.metric("🔵 Node",             ev["current_name"])
-        sc2.metric("g(n) — cost so far",  f"{ev['g_score']} m")
-        sc3.metric("h(n) — est. to goal", f"{ev['h_score']} m")
-        sc4.metric("f(n) = g + h",        f"{ev['f_score']} m")
-
-        # Frontier / explored
-        st.markdown(
-            f'<div style="margin-top:12px;padding:10px 16px;'
-            f'background:{T["card_bg"]};border-radius:10px;'
-            f'border:1px solid {T["card_border"]};">'
-            f'🟢 <b>Open frontier:</b> {ev["frontier_count"]} nodes'
-            f'&nbsp;&nbsp;|&nbsp;&nbsp;'
-            f'⚫ <b>Closed (explored):</b> {ev["expanded_count"]} nodes'
-            f'</div>',
-            unsafe_allow_html=True
-        )
+        # Explain the algorithms even before a route
+        st.markdown(f"""
+        <div style="background:{T['info_bg']};border:1px solid {T['info_brd']};
+                    border-radius:12px;padding:18px 22px;margin-top:10px;font-size:.85rem;color:{T['text']};">
+          <div style="font-weight:800;font-size:1rem;margin-bottom:10px;">📐 How the Algorithms Work</div>
+          <b>A* Search</b> — Uses a priority queue with $f(n) = g(n) + h(n)$:<br>
+          &bull; $g(n)$ = exact cost from start to current node (road distance in meters)<br>
+          &bull; $h(n)$ = Haversine great-circle distance to goal (admissible heuristic)<br>
+          &bull; Explores nodes in order of <i>estimated total cost</i> → prunes dead ends early<br><br>
+          <b>Dijkstra</b> — Special case with $h(n) = 0$:<br>
+          &bull; Explores nodes in order of exact cost from start only<br>
+          &bull; Guaranteed optimal but explores many more nodes<br>
+          &bull; Used as the gold-standard baseline to verify A* optimality
+        </div>
+        """, unsafe_allow_html=True)
