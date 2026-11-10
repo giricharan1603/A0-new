@@ -109,15 +109,15 @@ def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
 # SESSION STATE INITIALIZATION
 # ─────────────────────────────────────────────────────────────
 if "app_mode" not in st.session_state:
-    st.session_state.app_mode = "realworld"  # 'realworld' or 'campus'
+    st.session_state.app_mode = "campus"  # Default directly to inside MITS campus planner
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = True
 if "real_start_text" not in st.session_state:
-    st.session_state.real_start_text = "Madanapalle"
+    st.session_state.real_start_text = "MITS Madanapalle Campus (Angallu)"
 if "real_end_text" not in st.session_state:
     st.session_state.real_end_text = "Tirupati"
 if "real_start_place" not in st.session_state:
-    st.session_state.real_start_place = {"name": "Madanapalle", "short_name": "Madanapalle, Andhra Pradesh", "lat": 13.5558, "lon": 78.5015}
+    st.session_state.real_start_place = {"name": "MITS Madanapalle Campus (Angallu)", "short_name": "MITS Madanapalle Campus, Andhra Pradesh", "lat": 13.62935, "lon": 78.47955}
 if "real_end_place" not in st.session_state:
     st.session_state.real_end_place = {"name": "Tirupati", "short_name": "Tirupati, Andhra Pradesh", "lat": 13.6316, "lon": 79.4232}
 if "real_route_result" not in st.session_state:
@@ -725,8 +725,8 @@ if st.session_state.app_mode == "realworld":
             components.html(live_map._repr_html_(), height=500)
         else:
             default_map = create_base_map(
-                location=[13.6281, 78.5015],
-                zoom_start=10
+                location=[13.6276, 78.4783],
+                zoom_start=13
             )
             components.html(default_map._repr_html_(), height=500)
 
@@ -833,6 +833,14 @@ else:
                 fmap = create_base_map(
                     location=list(CAMPUS_CENTER),
                     zoom_start=17
+                )
+                
+                # Auto-fit bounds tightly around campus landmarks
+                lm_lats = [lm["latitude"] for lm in campus_landmarks]
+                lm_lons = [lm["longitude"] for lm in campus_landmarks]
+                fmap.fit_bounds(
+                    [[min(lm_lats), min(lm_lons)], [max(lm_lats), max(lm_lons)]],
+                    padding=[30, 30]
                 )
 
                 # Route line
