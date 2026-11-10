@@ -109,7 +109,7 @@ def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
 # SESSION STATE INITIALIZATION
 # ─────────────────────────────────────────────────────────────
 if "app_mode" not in st.session_state:
-    st.session_state.app_mode = "realworld"  # 'realworld' or 'campus'
+    st.session_state.app_mode = "campus"  # 'realworld' or 'campus'
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = True
 if "real_start_text" not in st.session_state:
@@ -834,6 +834,11 @@ else:
                     location=list(CAMPUS_CENTER),
                     zoom_start=17
                 )
+
+                # Fit bounds to campus buildings
+                lm_lats = [lm["latitude"] for lm in campus_landmarks]
+                lm_lons = [lm["longitude"] for lm in campus_landmarks]
+                fmap.fit_bounds([[min(lm_lats), min(lm_lons)], [max(lm_lats), max(lm_lons)]], padding=[35, 35])
 
                 # Route line
                 AntPath(
