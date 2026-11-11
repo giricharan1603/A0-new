@@ -1,12 +1,12 @@
 """
 route_service.py - Campus routing coordinator: turn-by-turn directions,
-accessibility filters, travel time estimation, and A*/Dijkstra benchmarking.
+accessibility filters, travel time estimation, and A* shortest & alternative paths.
 """
 
 import math
 from typing import Dict, List, Tuple, Optional, Any
 
-from core.astar import astar_search, dijkstra_search, compare_searches
+from core.astar import astar_search, find_alternative_paths
 from core.graph_engine import CampusGraphManager
 
 
@@ -89,15 +89,16 @@ class CampusRouteService:
         mode: str = "walking",
         avoid_stairs: bool = False,
         wheelchair_friendly: bool = False,
-        include_benchmark: bool = True,
+        include_benchmark: bool = False,
     ) -> Dict[str, Any]:
         """
-        Computes the optimal campus route between two landmarks or coordinates.
+        Computes the optimal campus route between two landmarks or coordinates using A* search.
+        Also finds alternative available walkways.
 
         Returns a result dict with keys:
           status, distance_meters, distance_km, estimated_time,
-          path_nodes, path_coordinates, directions,
-          astar, dijkstra, comparison, warnings.
+          path_nodes, path_coordinates, directions, alternatives,
+          astar, warnings.
         """
         start_node, start_warn = self._resolve_node(start)
         goal_node, goal_warn = self._resolve_node(goal)
@@ -110,15 +111,14 @@ class CampusRouteService:
                 "error": "No connected path exists between origin and destination.",
                 "distance_meters": 0.0,
                 "directions": [],
+                "alternatives": [],
                 "astar": {"success": False, "nodes_expanded": 0, "execution_time_ms": 0.0},
-                "dijkstra": None,
-                "comparison": None,
                 "warnings": warnings,
             }
 
         edge_filter = self._build_edge_filter(mode, avoid_stairs, wheelchair_friendly)
 
-        # A* informed search
+        # A* informed search for shortest path
         astar_res = astar_search(self.graph, start_node, goal_node, edge_filter=edge_filter)
 
         if not astar_res["success"]:
@@ -127,18 +127,10 @@ class CampusRouteService:
                 "error": astar_res.get("error", "No route found under current constraints."),
                 "distance_meters": 0.0,
                 "directions": [],
+                "alternatives": [],
                 "astar": astar_res,
-                "dijkstra": None,
-                "comparison": None,
                 "warnings": warnings,
             }
-
-        # Dijkstra baseline for benchmark comparison
-        dijkstra_res = None
-        comparison = None
-        if include_benchmark:
-            dijkstra_res = dijkstra_search(self.graph, start_node, goal_node, edge_filter=edge_filter)
-            comparison = compare_searches(astar_res, dijkstra_res)
 
         # Build path coordinates + turn-by-turn directions
         path_nodes = astar_res["path"]
@@ -164,11 +156,24 @@ class CampusRouteService:
                     "cumulative_meters": round(cumulative, 1),
                 })
 
+        # Discover alternative paths
+        raw_alts = find_alternative_paths(self.graph, start_node, goal_node, k=2, edge_filter=edge_filter)
+        alternatives = []
+        for idx, alt in enumerate(raw_alts):
+            alt_coords = [(self.graph.nodes[n]["y"], self.graph.nodes[n]["x"]) for n in alt["path"]]
+            alternatives.append({
+                "path_nodes": alt["path"],
+                "coords": alt_coords,
+                "distance_m": alt["distance_m"],
+                "distance_km": round(alt["distance_m"] / 1000.0, 3),
+                "label": f"Alternative Pathway {idx + 1} ({alt['distance_m']:.1f} m)"
+            })
+
         speed = DRIVING_SPEED_MPS if mode == "driving" else WALKING_SPEED_MPS
         travel_time = self._format_time(astar_res["distance_m"] / speed)
 
         if wheelchair_friendly:
-            warnings.append("Accessibility routing based on available map tags — verify on-site.")
+            warnings.append("Accessibility routing based on available pathway tags.")
 
         return {
             "status": "SUCCESS",
@@ -181,8 +186,7 @@ class CampusRouteService:
             "path_nodes": path_nodes,
             "path_coordinates": path_coords,
             "directions": directions,
+            "alternatives": alternatives,
             "astar": astar_res,
-            "dijkstra": dijkstra_res,
-            "comparison": comparison,
             "warnings": warnings,
         }

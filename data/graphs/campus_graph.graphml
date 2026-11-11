@@ -10,336 +10,585 @@
   <key id="d1" for="node" attr.name="x" attr.type="double" />
   <key id="d0" for="node" attr.name="y" attr.type="double" />
   <graph edgedefault="directed">
-    <node id="MAIN_GATE">
-      <data key="d0">13.63051</data>
-      <data key="d1">78.47781</data>
-      <data key="d2">Highway Intersection / Main Entrance Road</data>
-    </node>
     <node id="BOYS_HOSTEL">
-      <data key="d0">13.63248</data>
-      <data key="d1">78.47761</data>
-      <data key="d2">Boys Hostel Entrance Area</data>
+      <data key="d0">13.635310725303418</data>
+      <data key="d1">78.47995995131583</data>
+      <data key="d2">Boys Hostel</data>
     </node>
     <node id="GIRLS_HOSTEL">
-      <data key="d0">13.63152</data>
-      <data key="d1">78.47863</data>
-      <data key="d2">Girls Hostel Area</data>
+      <data key="d0">13.633584065818326</data>
+      <data key="d1">78.48037618774832</data>
+      <data key="d2">Girls Hostel</data>
     </node>
-    <node id="MITS_GROUND">
-      <data key="d0">13.62923</data>
-      <data key="d1">78.47641</data>
+    <node id="MAIN_ENTRANCE">
+      <data key="d0">13.63326569120756</data>
+      <data key="d1">78.47993151017306</data>
+      <data key="d2">Main Entrance Gate</data>
+    </node>
+    <node id="GROUND">
+      <data key="d0">13.6317268849427</data>
+      <data key="d1">78.47892675592605</data>
       <data key="d2">MITS Ground</data>
     </node>
-    <node id="J_CENTRAL">
-      <data key="d0">13.6285</data>
-      <data key="d1">78.4771</data>
-      <data key="d2">Central Boulevard Junction</data>
+    <node id="SECOND_ENTRANCE_GATE">
+      <data key="d0">13.63120555378248</data>
+      <data key="d1">78.47991112664288</data>
+      <data key="d2">2nd Entrance Gate</data>
     </node>
-    <node id="PLACEMENT_OFFICE">
-      <data key="d0">13.62774</data>
-      <data key="d1">78.47649</data>
-      <data key="d2">Placement Office Block Entrance</data>
+    <node id="KK_BLOCK">
+      <data key="d0">13.630631316583221</data>
+      <data key="d1">78.47800468202081</data>
+      <data key="d2">KK Block</data>
     </node>
-    <node id="ADMIN_COURTYARD">
-      <data key="d0">13.62719</data>
-      <data key="d1">78.47656</data>
-      <data key="d2">Madanapalle Institute of Technology &amp; Sciences (Main Core)</data>
+    <node id="ANNAPURNA_BLOCK">
+      <data key="d0">13.630680021017103</data>
+      <data key="d1">78.47771239599888</data>
+      <data key="d2">Annapurna Block</data>
     </node>
-    <node id="GYM_UPPER">
-      <data key="d0">13.62778</data>
-      <data key="d1">78.47545</data>
-      <data key="d2">Annapurna &amp; KK Blocks (Sports Annex Upper)</data>
+    <node id="CSE_DEPARTMENT">
+      <data key="d0">13.62997889621131</data>
+      <data key="d1">78.47793038746299</data>
+      <data key="d2">CSE Department</data>
     </node>
-    <node id="GYM_MAIN">
-      <data key="d0">13.62725</data>
-      <data key="d1">78.47547</data>
-      <data key="d2">MITS Gym &amp; Indoor Sports Complex</data>
+    <node id="GYM_MITS">
+      <data key="d0">13.629873082329585</data>
+      <data key="d1">78.47779665004937</data>
+      <data key="d2">Gym of MITS</data>
     </node>
-    <node id="SW_ACADEMIC_BLOCK">
-      <data key="d0">13.62657</data>
-      <data key="d1">78.47546</data>
-      <data key="d2">Research Block &amp; South-West Labs</data>
+    <node id="RESEARCH_BLOCK">
+      <data key="d0">13.629588347481315</data>
+      <data key="d1">78.47775425845094</data>
+      <data key="d2">Research Block</data>
     </node>
-    <node id="BOTTOM_WALKWAY">
-      <data key="d0">13.62678</data>
-      <data key="d1">78.47639</data>
-      <data key="d2">Library Promenade &amp; Southern Walkway</data>
+    <node id="ADMIN_BLOCK">
+      <data key="d0">13.630295828147474</data>
+      <data key="d1">78.47938541367722</data>
+      <data key="d2">Admin Block</data>
     </node>
-    <node id="AUDITORIUM_ENTRANCE">
-      <data key="d0">13.62656</data>
-      <data key="d1">78.47697</data>
-      <data key="d2">Auditorium &amp; Seminar Halls Entrance</data>
+    <node id="CIRCULAR_BLOCK">
+      <data key="d0">13.629865727426015</data>
+      <data key="d1">78.47860757305733</data>
+      <data key="d2">Circular Block</data>
     </node>
-    <edge source="MAIN_GATE" target="BOYS_HOSTEL">
-      <data key="d3">220.12</data>
+    <node id="LIBRARY">
+      <data key="d0">13.62966240681394</data>
+      <data key="d1">78.478323258912</data>
+      <data key="d2">Library</data>
+    </node>
+    <node id="SOUTH_BLOCK">
+      <data key="d0">13.62945704620792</data>
+      <data key="d1">78.47864634976034</data>
+      <data key="d2">South Block</data>
+    </node>
+    <node id="AUDITORIUM">
+      <data key="d0">13.629662406813559</data>
+      <data key="d1">78.47892407372923</data>
+      <data key="d2">Auditorium</data>
+    </node>
+    <node id="EAST_BLOCK">
+      <data key="d0">13.62976406714236</data>
+      <data key="d1">78.47937468484294</data>
+      <data key="d2">East Block</data>
+    </node>
+    <node id="CANTEEN">
+      <data key="d0">13.629756247118724</data>
+      <data key="d1">78.4796831388747</data>
+      <data key="d2">Canteen</data>
+    </node>
+    <edge source="BOYS_HOSTEL" target="MAIN_ENTRANCE">
+      <data key="d3">227.4182</data>
       <data key="d4">primary</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">North Boys Hostel Avenue</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="MAIN_GATE" target="GIRLS_HOSTEL">
-      <data key="d3">143.06</data>
-      <data key="d4">pedestrian</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Girls Hostel Approach</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="MAIN_GATE" target="J_CENTRAL">
-      <data key="d3">236.3</data>
-      <data key="d4">primary</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Central Campus Boulevard</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="MAIN_GATE" target="MITS_GROUND">
-      <data key="d3">207.72</data>
-      <data key="d4">path</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Ground North Access Path</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="BOYS_HOSTEL" target="MAIN_GATE">
-      <data key="d3">220.12</data>
-      <data key="d4">primary</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">North Boys Hostel Avenue</data>
+      <data key="d7">Hostel Main Access Road</data>
       <data key="d8">False</data>
     </edge>
     <edge source="BOYS_HOSTEL" target="GIRLS_HOSTEL">
-      <data key="d3">153.44</data>
+      <data key="d3">197.1941</data>
       <data key="d4">pedestrian</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Hostel Cross-Connector</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="GIRLS_HOSTEL" target="MAIN_GATE">
-      <data key="d3">143.06</data>
-      <data key="d4">pedestrian</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Girls Hostel Approach</data>
+      <data key="d7">Hostel Cross-Way</data>
       <data key="d8">False</data>
     </edge>
     <edge source="GIRLS_HOSTEL" target="BOYS_HOSTEL">
-      <data key="d3">153.44</data>
+      <data key="d3">197.1941</data>
       <data key="d4">pedestrian</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Hostel Cross-Connector</data>
+      <data key="d7">Hostel Cross-Way</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="MITS_GROUND" target="MAIN_GATE">
-      <data key="d3">207.72</data>
-      <data key="d4">path</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Ground North Access Path</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="MITS_GROUND" target="J_CENTRAL">
-      <data key="d3">110.22</data>
+    <edge source="GIRLS_HOSTEL" target="MAIN_ENTRANCE">
+      <data key="d3">59.6853</data>
       <data key="d4">pedestrian</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Ground East Pavilion Walk</data>
+      <data key="d7">Girls Hostel Avenue</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="MITS_GROUND" target="GYM_UPPER">
-      <data key="d3">191.72</data>
-      <data key="d4">path</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Ground-Gym Connector</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="J_CENTRAL" target="MAIN_GATE">
-      <data key="d3">236.3</data>
+    <edge source="MAIN_ENTRANCE" target="BOYS_HOSTEL">
+      <data key="d3">227.4182</data>
       <data key="d4">primary</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Central Campus Boulevard</data>
+      <data key="d7">Hostel Main Access Road</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="J_CENTRAL" target="MITS_GROUND">
-      <data key="d3">110.22</data>
+    <edge source="MAIN_ENTRANCE" target="GIRLS_HOSTEL">
+      <data key="d3">59.6853</data>
       <data key="d4">pedestrian</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Ground East Pavilion Walk</data>
+      <data key="d7">Girls Hostel Avenue</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="J_CENTRAL" target="PLACEMENT_OFFICE">
-      <data key="d3">107.18</data>
+    <edge source="MAIN_ENTRANCE" target="SECOND_ENTRANCE_GATE">
+      <data key="d3">229.0874</data>
       <data key="d4">primary</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Placement Approach Spine</data>
+      <data key="d7">Main Campus Boulevard</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="PLACEMENT_OFFICE" target="J_CENTRAL">
-      <data key="d3">107.18</data>
-      <data key="d4">primary</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Placement Approach Spine</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="PLACEMENT_OFFICE" target="ADMIN_COURTYARD">
-      <data key="d3">61.62</data>
-      <data key="d4">pedestrian</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Academic Central Quadrangle</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="PLACEMENT_OFFICE" target="GYM_UPPER">
-      <data key="d3">112.48</data>
-      <data key="d4">footway</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">North-West Sports Promenade</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="ADMIN_COURTYARD" target="PLACEMENT_OFFICE">
-      <data key="d3">61.62</data>
-      <data key="d4">pedestrian</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Academic Central Quadrangle</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="ADMIN_COURTYARD" target="BOTTOM_WALKWAY">
-      <data key="d3">49.15</data>
-      <data key="d4">footway</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Courtyard South Link</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="ADMIN_COURTYARD" target="AUDITORIUM_ENTRANCE">
-      <data key="d3">82.89</data>
-      <data key="d4">footway</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Auditorium East Corridor</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="ADMIN_COURTYARD" target="GYM_MAIN">
-      <data key="d3">117.98</data>
-      <data key="d4">footway</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Central-Gym Cross Corridor</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="GYM_UPPER" target="PLACEMENT_OFFICE">
-      <data key="d3">112.48</data>
-      <data key="d4">footway</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">North-West Sports Promenade</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="GYM_UPPER" target="GYM_MAIN">
-      <data key="d3">58.97</data>
-      <data key="d4">footway</data>
-      <data key="d5">False</data>
-      <data key="d6">True</data>
-      <data key="d7">Sports Hall Corridor</data>
-      <data key="d8">False</data>
-    </edge>
-    <edge source="GYM_UPPER" target="MITS_GROUND">
-      <data key="d3">191.72</data>
+    <edge source="MAIN_ENTRANCE" target="GROUND">
+      <data key="d3">202.6487</data>
       <data key="d4">path</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Ground-Gym Connector</data>
+      <data key="d7">North Sports Walkway</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="GYM_MAIN" target="GYM_UPPER">
-      <data key="d3">58.97</data>
+    <edge source="GROUND" target="MAIN_ENTRANCE">
+      <data key="d3">202.6487</data>
+      <data key="d4">path</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">North Sports Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="GROUND" target="SECOND_ENTRANCE_GATE">
+      <data key="d3">121.1439</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East Ground Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="GROUND" target="KK_BLOCK">
+      <data key="d3">157.3818</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Ground-KK Connector Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="GROUND" target="CIRCULAR_BLOCK">
+      <data key="d3">209.8059</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Central Ground Boulevard</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="SECOND_ENTRANCE_GATE" target="MAIN_ENTRANCE">
+      <data key="d3">229.0874</data>
+      <data key="d4">primary</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Main Campus Boulevard</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="SECOND_ENTRANCE_GATE" target="GROUND">
+      <data key="d3">121.1439</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East Ground Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="SECOND_ENTRANCE_GATE" target="ADMIN_BLOCK">
+      <data key="d3">116.0177</data>
+      <data key="d4">primary</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Administrative Avenue</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="SECOND_ENTRANCE_GATE" target="EAST_BLOCK">
+      <data key="d3">170.4467</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East Academic Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="KK_BLOCK" target="GROUND">
+      <data key="d3">157.3818</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Ground-KK Connector Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="KK_BLOCK" target="CIRCULAR_BLOCK">
+      <data key="d3">107.199</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Sports Hall Corridor</data>
+      <data key="d7">KK Block Approach</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="GYM_MAIN" target="SW_ACADEMIC_BLOCK">
-      <data key="d3">75.62</data>
+    <edge source="KK_BLOCK" target="ANNAPURNA_BLOCK">
+      <data key="d3">32.0463</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">West Academic Walkway</data>
+      <data key="d7">KK-Annapurna Corridor</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="GYM_MAIN" target="ADMIN_COURTYARD">
-      <data key="d3">117.98</data>
+    <edge source="KK_BLOCK" target="CSE_DEPARTMENT">
+      <data key="d3">72.9887</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Central-Gym Cross Corridor</data>
+      <data key="d7">KK-CSE Connector</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="SW_ACADEMIC_BLOCK" target="GYM_MAIN">
-      <data key="d3">75.62</data>
+    <edge source="ANNAPURNA_BLOCK" target="KK_BLOCK">
+      <data key="d3">32.0463</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">West Academic Walkway</data>
+      <data key="d7">KK-Annapurna Corridor</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="SW_ACADEMIC_BLOCK" target="BOTTOM_WALKWAY">
-      <data key="d3">103.18</data>
+    <edge source="ANNAPURNA_BLOCK" target="CSE_DEPARTMENT">
+      <data key="d3">81.4428</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">South Academic Promenade</data>
+      <data key="d7">Annapurna-CSE Walk</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="BOTTOM_WALKWAY" target="SW_ACADEMIC_BLOCK">
-      <data key="d3">103.18</data>
+    <edge source="ANNAPURNA_BLOCK" target="GYM_MITS">
+      <data key="d3">90.1882</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">South Academic Promenade</data>
+      <data key="d7">Sports Annex Pathway</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="BOTTOM_WALKWAY" target="ADMIN_COURTYARD">
-      <data key="d3">49.15</data>
+    <edge source="CSE_DEPARTMENT" target="CIRCULAR_BLOCK">
+      <data key="d3">74.2531</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Courtyard South Link</data>
+      <data key="d7">CSE Academic Spine</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="BOTTOM_WALKWAY" target="AUDITORIUM_ENTRANCE">
-      <data key="d3">67.28</data>
+    <edge source="CSE_DEPARTMENT" target="KK_BLOCK">
+      <data key="d3">72.9887</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">KK-CSE Connector</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CSE_DEPARTMENT" target="ANNAPURNA_BLOCK">
+      <data key="d3">81.4428</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Annapurna-CSE Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CSE_DEPARTMENT" target="GYM_MITS">
+      <data key="d3">18.636</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">CSE-Gym Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CSE_DEPARTMENT" target="LIBRARY">
+      <data key="d3">55.1445</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">CSE-Library Pathway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="GYM_MITS" target="ANNAPURNA_BLOCK">
+      <data key="d3">90.1882</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Sports Annex Pathway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="GYM_MITS" target="CSE_DEPARTMENT">
+      <data key="d3">18.636</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">CSE-Gym Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="GYM_MITS" target="RESEARCH_BLOCK">
+      <data key="d3">31.9908</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Gym-Research Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="RESEARCH_BLOCK" target="GYM_MITS">
+      <data key="d3">31.9908</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Gym-Research Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="RESEARCH_BLOCK" target="LIBRARY">
+      <data key="d3">62.0372</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Research-Library Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="ADMIN_BLOCK" target="SECOND_ENTRANCE_GATE">
+      <data key="d3">116.0177</data>
+      <data key="d4">primary</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Administrative Avenue</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="ADMIN_BLOCK" target="CIRCULAR_BLOCK">
+      <data key="d3">96.7091</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin-Circular Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="ADMIN_BLOCK" target="EAST_BLOCK">
+      <data key="d3">59.1405</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin East Corridor</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="ADMIN_BLOCK" target="CANTEEN">
+      <data key="d3">68.0805</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin Canteen Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CIRCULAR_BLOCK" target="GROUND">
+      <data key="d3">209.8059</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Central Ground Boulevard</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CIRCULAR_BLOCK" target="ADMIN_BLOCK">
+      <data key="d3">96.7091</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin-Circular Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CIRCULAR_BLOCK" target="AUDITORIUM">
+      <data key="d3">40.999</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
       <data key="d7">Auditorium Plaza Walk</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="AUDITORIUM_ENTRANCE" target="BOTTOM_WALKWAY">
-      <data key="d3">67.28</data>
+    <edge source="CIRCULAR_BLOCK" target="SOUTH_BLOCK">
+      <data key="d3">45.6361</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">South Block Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CIRCULAR_BLOCK" target="LIBRARY">
+      <data key="d3">38.1457</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library Central Corridor</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CIRCULAR_BLOCK" target="CSE_DEPARTMENT">
+      <data key="d3">74.2531</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">CSE Academic Spine</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CIRCULAR_BLOCK" target="KK_BLOCK">
+      <data key="d3">107.199</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">KK Block Approach</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="LIBRARY" target="CIRCULAR_BLOCK">
+      <data key="d3">38.1457</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library Central Corridor</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="LIBRARY" target="CSE_DEPARTMENT">
+      <data key="d3">55.1445</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">CSE-Library Pathway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="LIBRARY" target="RESEARCH_BLOCK">
+      <data key="d3">62.0372</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Research-Library Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="LIBRARY" target="SOUTH_BLOCK">
+      <data key="d3">41.7187</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library South Wing</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="SOUTH_BLOCK" target="CIRCULAR_BLOCK">
+      <data key="d3">45.6361</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">South Block Promenade</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="SOUTH_BLOCK" target="LIBRARY">
+      <data key="d3">41.7187</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Library South Wing</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="SOUTH_BLOCK" target="AUDITORIUM">
+      <data key="d3">37.7114</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">South-Auditorium Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="AUDITORIUM" target="EAST_BLOCK">
+      <data key="d3">49.9895</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East-Auditorium Concourse</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="AUDITORIUM" target="CIRCULAR_BLOCK">
+      <data key="d3">40.999</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
       <data key="d7">Auditorium Plaza Walk</data>
       <data key="d8">False</data>
     </edge>
-    <edge source="AUDITORIUM_ENTRANCE" target="ADMIN_COURTYARD">
-      <data key="d3">82.89</data>
+    <edge source="AUDITORIUM" target="SOUTH_BLOCK">
+      <data key="d3">37.7114</data>
       <data key="d4">footway</data>
       <data key="d5">False</data>
       <data key="d6">True</data>
-      <data key="d7">Auditorium East Corridor</data>
+      <data key="d7">South-Auditorium Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="AUDITORIUM" target="CANTEEN">
+      <data key="d3">82.6883</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Auditorium-Canteen Court</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="EAST_BLOCK" target="SECOND_ENTRANCE_GATE">
+      <data key="d3">170.4467</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East Academic Link</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="EAST_BLOCK" target="ADMIN_BLOCK">
+      <data key="d3">59.1405</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin East Corridor</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="EAST_BLOCK" target="CANTEEN">
+      <data key="d3">33.344</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Canteen Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="EAST_BLOCK" target="AUDITORIUM">
+      <data key="d3">49.9895</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">East-Auditorium Concourse</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CANTEEN" target="EAST_BLOCK">
+      <data key="d3">33.344</data>
+      <data key="d4">pedestrian</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Canteen Walkway</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CANTEEN" target="ADMIN_BLOCK">
+      <data key="d3">68.0805</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Admin Canteen Walk</data>
+      <data key="d8">False</data>
+    </edge>
+    <edge source="CANTEEN" target="AUDITORIUM">
+      <data key="d3">82.6883</data>
+      <data key="d4">footway</data>
+      <data key="d5">False</data>
+      <data key="d6">True</data>
+      <data key="d7">Auditorium-Canteen Court</data>
       <data key="d8">False</data>
     </edge>
   </graph>

@@ -1,90 +1,138 @@
 [
   {
-    "landmark_id": "MAIN_GATE",
-    "name": "Highway Intersection / Main Entrance Road",
-    "latitude": 13.63051,
-    "longitude": 78.47781,
+    "landmark_id": "MAIN_ENTRANCE",
+    "name": "Main Entrance Gate",
+    "latitude": 13.63326569120756,
+    "longitude": 78.47993151017306,
     "category": "Entrance",
-    "description": "Primary highway intersection and main entrance road to campus."
+    "description": "Primary highway entrance gate to MITS campus."
+  },
+  {
+    "landmark_id": "SECOND_ENTRANCE_GATE",
+    "name": "2nd Entrance Gate",
+    "latitude": 13.63120555378248,
+    "longitude": 78.47991112664288,
+    "category": "Entrance",
+    "description": "Secondary campus access gate near academic blocks."
   },
   {
     "landmark_id": "BOYS_HOSTEL",
-    "name": "Boys Hostel Entrance Area",
-    "latitude": 13.63248,
-    "longitude": 78.47761,
+    "name": "Boys Hostel",
+    "latitude": 13.635310725303418,
+    "longitude": 78.47995995131583,
     "category": "Residential",
-    "description": "North campus residential quarters for male students."
+    "description": "North campus residential block for male students."
   },
   {
     "landmark_id": "GIRLS_HOSTEL",
-    "name": "Girls Hostel Area",
-    "latitude": 13.63152,
-    "longitude": 78.47863,
+    "name": "Girls Hostel",
+    "latitude": 13.633584065818326,
+    "longitude": 78.48037618774832,
     "category": "Residential",
-    "description": "North-eastern campus residential block for female students."
+    "description": "Campus residential quarters for female students."
   },
   {
-    "landmark_id": "MITS_GROUND",
+    "landmark_id": "GROUND",
     "name": "MITS Ground",
-    "latitude": 13.62923,
-    "longitude": 78.47641,
+    "latitude": 13.6317268849427,
+    "longitude": 78.47892675592605,
     "category": "Sports",
-    "description": "Large central athletic sports and event ground."
+    "description": "Main athletic sports ground and events arena."
   },
   {
-    "landmark_id": "GYM_UPPER",
-    "name": "Annapurna & KK Blocks (Sports Annex Upper)",
-    "latitude": 13.62778,
-    "longitude": 78.47545,
-    "category": "Academic",
-    "description": "Upper academic wings and sports annex facility."
-  },
-  {
-    "landmark_id": "GYM_MAIN",
-    "name": "MITS Gym & Indoor Sports Complex",
-    "latitude": 13.62725,
-    "longitude": 78.47547,
-    "category": "Sports",
-    "description": "Primary fitness gymnasium and indoor games hall."
-  },
-  {
-    "landmark_id": "SW_ACADEMIC_BLOCK",
-    "name": "Research Block & South-West Labs",
-    "latitude": 13.62657,
-    "longitude": 78.47546,
-    "category": "Academic",
-    "description": "Southwestern academic classrooms, laboratories, and research block."
-  },
-  {
-    "landmark_id": "PLACEMENT_OFFICE",
-    "name": "Placement Office Block Entrance",
-    "latitude": 13.62774,
-    "longitude": 78.47649,
+    "landmark_id": "ADMIN_BLOCK",
+    "name": "Admin Block",
+    "latitude": 13.630295828147474,
+    "longitude": 78.47938541367722,
     "category": "Administration",
-    "description": "Training and Placement Cell, corporate interview block."
+    "description": "Central administrative headquarters and executive offices."
   },
   {
-    "landmark_id": "ADMIN_COURTYARD",
-    "name": "Madanapalle Institute of Technology & Sciences (Main Core)",
-    "latitude": 13.62719,
-    "longitude": 78.47656,
+    "landmark_id": "CIRCULAR_BLOCK",
+    "name": "Circular Block",
+    "latitude": 13.629865727426015,
+    "longitude": 78.47860757305733,
     "category": "Academic Core",
-    "description": "Central academic block core, circular block, and administrative courtyard."
+    "description": "Iconic circular academic lecture and classroom complex."
   },
   {
-    "landmark_id": "BOTTOM_WALKWAY",
-    "name": "Library Promenade & Southern Walkway",
-    "latitude": 13.62678,
-    "longitude": 78.47639,
+    "landmark_id": "CSE_DEPARTMENT",
+    "name": "CSE Department",
+    "latitude": 13.62997889621131,
+    "longitude": 78.47793038746299,
     "category": "Academic",
-    "description": "Southern connecting promenade between library and academic wings."
+    "description": "Computer Science & Engineering department classrooms and labs."
   },
   {
-    "landmark_id": "AUDITORIUM_ENTRANCE",
-    "name": "Auditorium & Seminar Halls Entrance",
-    "latitude": 13.62656,
-    "longitude": 78.47697,
+    "landmark_id": "KK_BLOCK",
+    "name": "KK Block",
+    "latitude": 13.630631316583221,
+    "longitude": 78.47800468202081,
+    "category": "Academic",
+    "description": "KK academic block classrooms and faculty rooms."
+  },
+  {
+    "landmark_id": "ANNAPURNA_BLOCK",
+    "name": "Annapurna Block",
+    "latitude": 13.630680021017103,
+    "longitude": 78.47771239599888,
+    "category": "Academic",
+    "description": "Annapurna academic wing and laboratories."
+  },
+  {
+    "landmark_id": "GYM_MITS",
+    "name": "Gym of MITS",
+    "latitude": 13.629873082329585,
+    "longitude": 78.47779665004937,
+    "category": "Sports",
+    "description": "Campus fitness gym and sports training facility."
+  },
+  {
+    "landmark_id": "RESEARCH_BLOCK",
+    "name": "Research Block",
+    "latitude": 13.629588347481315,
+    "longitude": 78.47775425845094,
+    "category": "Research",
+    "description": "Advanced research facilities, PG labs, and innovation cell."
+  },
+  {
+    "landmark_id": "LIBRARY",
+    "name": "Library",
+    "latitude": 13.62966240681394,
+    "longitude": 78.478323258912,
+    "category": "Academic",
+    "description": "Central digital & physical library and knowledge resource center."
+  },
+  {
+    "landmark_id": "SOUTH_BLOCK",
+    "name": "South Block",
+    "latitude": 13.62945704620792,
+    "longitude": 78.47864634976034,
+    "category": "Academic",
+    "description": "South academic block and specialized department wings."
+  },
+  {
+    "landmark_id": "AUDITORIUM",
+    "name": "Auditorium",
+    "latitude": 13.629662406813559,
+    "longitude": 78.47892407372923,
     "category": "Facility",
-    "description": "Auditorium, seminar halls, and convention center entrance."
+    "description": "Main campus auditorium and multipurpose conference hall."
+  },
+  {
+    "landmark_id": "EAST_BLOCK",
+    "name": "East Block",
+    "latitude": 13.62976406714236,
+    "longitude": 78.47937468484294,
+    "category": "Academic",
+    "description": "East academic complex and tutorial rooms."
+  },
+  {
+    "landmark_id": "CANTEEN",
+    "name": "Canteen",
+    "latitude": 13.629756247118724,
+    "longitude": 78.4796831388747,
+    "category": "Facility",
+    "description": "Campus food court, dining area, and cafeteria."
   }
 ]

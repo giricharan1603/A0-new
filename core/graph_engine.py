@@ -1,6 +1,6 @@
 """
 graph_engine.py - MITS Campus graph loading, caching, coordinate snapping,
-and exact image-calibrated pathway topology built on user ground-truth coordinates.
+and exact pathway topology built on user ground-truth coordinates for all 17 landmarks.
 """
 
 import os
@@ -15,61 +15,92 @@ DEFAULT_CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "da
 LANDMARKS_FILE   = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "landmarks.json")
 
 # Campus Centroid from exact user coordinates
-CAMPUS_CENTER = (13.6285, 78.4768)
+CAMPUS_CENTER = (13.6305, 78.4790)
 
 
 def create_mits_synthetic_campus_graph() -> nx.DiGraph:
     """
     Builds the precise pedestrian and vehicle road graph of MITS Madanapalle campus
-    calibrated with the exact user coordinates matching the annotated satellite layout.
+    calibrated with the exact user coordinates matching all 17 buildings and entrance gates.
     """
     G = nx.DiGraph()
 
     # Exact Landmark coordinates provided by user
     nodes = {
-        # North Campus & Hostel Areas
-        "MAIN_GATE":           {"y": 13.63051, "x": 78.47781, "name": "Highway Intersection / Main Entrance Road"},
-        "BOYS_HOSTEL":         {"y": 13.63248, "x": 78.47761, "name": "Boys Hostel Entrance Area"},
-        "GIRLS_HOSTEL":        {"y": 13.63152, "x": 78.47863, "name": "Girls Hostel Area"},
-        # Central Zone
-        "MITS_GROUND":         {"y": 13.62923, "x": 78.47641, "name": "MITS Ground"},
-        "J_CENTRAL":           {"y": 13.62850, "x": 78.47710, "name": "Central Boulevard Junction"},
-        # South Campus & Academic Buildings
-        "PLACEMENT_OFFICE":    {"y": 13.62774, "x": 78.47649, "name": "Placement Office Block Entrance"},
-        "ADMIN_COURTYARD":     {"y": 13.62719, "x": 78.47656, "name": "Madanapalle Institute of Technology & Sciences (Main Core)"},
-        "GYM_UPPER":           {"y": 13.62778, "x": 78.47545, "name": "Annapurna & KK Blocks (Sports Annex Upper)"},
-        "GYM_MAIN":            {"y": 13.62725, "x": 78.47547, "name": "MITS Gym & Indoor Sports Complex"},
-        "SW_ACADEMIC_BLOCK":   {"y": 13.62657, "x": 78.47546, "name": "Research Block & South-West Labs"},
-        "BOTTOM_WALKWAY":      {"y": 13.62678, "x": 78.47639, "name": "Library Promenade & Southern Walkway"},
-        "AUDITORIUM_ENTRANCE": {"y": 13.62656, "x": 78.47697, "name": "Auditorium & Seminar Halls Entrance"},
+        # Hostels & North Entrances
+        "BOYS_HOSTEL":          {"y": 13.635310725303418, "x": 78.47995995131583, "name": "Boys Hostel"},
+        "GIRLS_HOSTEL":         {"y": 13.633584065818326, "x": 78.48037618774832, "name": "Girls Hostel"},
+        "MAIN_ENTRANCE":        {"y": 13.63326569120756,  "x": 78.47993151017306, "name": "Main Entrance Gate"},
+        "GROUND":               {"y": 13.6317268849427,   "x": 78.47892675592605, "name": "MITS Ground"},
+        "SECOND_ENTRANCE_GATE": {"y": 13.63120555378248,  "x": 78.47991112664288, "name": "2nd Entrance Gate"},
+
+        # Upper Academic / North-West Wing
+        "KK_BLOCK":             {"y": 13.630631316583221, "x": 78.47800468202081, "name": "KK Block"},
+        "ANNAPURNA_BLOCK":      {"y": 13.630680021017103, "x": 78.47771239599888, "name": "Annapurna Block"},
+        "CSE_DEPARTMENT":       {"y": 13.62997889621131,  "x": 78.47793038746299, "name": "CSE Department"},
+        "GYM_MITS":             {"y": 13.629873082329585, "x": 78.47779665004937, "name": "Gym of MITS"},
+        "RESEARCH_BLOCK":       {"y": 13.629588347481315, "x": 78.47775425845094, "name": "Research Block"},
+
+        # Central & Administrative Zone
+        "ADMIN_BLOCK":          {"y": 13.630295828147474, "x": 78.47938541367722, "name": "Admin Block"},
+        "CIRCULAR_BLOCK":       {"y": 13.629865727426015, "x": 78.47860757305733, "name": "Circular Block"},
+        "LIBRARY":              {"y": 13.62966240681394,  "x": 78.478323258912,   "name": "Library"},
+        "SOUTH_BLOCK":          {"y": 13.62945704620792,  "x": 78.47864634976034, "name": "South Block"},
+
+        # East Wing & Amenities
+        "AUDITORIUM":           {"y": 13.629662406813559, "x": 78.47892407372923, "name": "Auditorium"},
+        "EAST_BLOCK":           {"y": 13.62976406714236,  "x": 78.47937468484294, "name": "East Block"},
+        "CANTEEN":              {"y": 13.629756247118724, "x": 78.4796831388747,  "name": "Canteen"},
     }
 
     for nid, data in nodes.items():
         G.add_node(nid, **data)
 
-    # Walkway & roadway topology connecting the buildings
-    # (u, v, bidirectional, highway_type, has_stairs, wheelchair_ok, path_name)
+    # Walkway and roadway network connecting all campus buildings
+    # Format: (u, v, bidirectional, highway_type, has_stairs, wheelchair_ok, name)
     edges = [
-        # North Campus links
-        ("MAIN_GATE",           "BOYS_HOSTEL",         True,  "primary",    False, True,  "North Boys Hostel Avenue"),
-        ("MAIN_GATE",           "GIRLS_HOSTEL",        True,  "pedestrian", False, True,  "Girls Hostel Approach"),
-        ("BOYS_HOSTEL",         "GIRLS_HOSTEL",        True,  "pedestrian", False, True,  "Hostel Cross-Connector"),
-        # Entrance to Central Ground & Spine
-        ("MAIN_GATE",           "J_CENTRAL",           True,  "primary",    False, True,  "Central Campus Boulevard"),
-        ("MAIN_GATE",           "MITS_GROUND",         True,  "path",       False, True,  "Ground North Access Path"),
-        ("J_CENTRAL",           "MITS_GROUND",         True,  "pedestrian", False, True,  "Ground East Pavilion Walk"),
-        ("J_CENTRAL",           "PLACEMENT_OFFICE",    True,  "primary",    False, True,  "Placement Approach Spine"),
-        # Academic Core & West Gym Wing
-        ("PLACEMENT_OFFICE",    "ADMIN_COURTYARD",     True,  "pedestrian", False, True,  "Academic Central Quadrangle"),
-        ("PLACEMENT_OFFICE",    "GYM_UPPER",           True,  "footway",    False, True,  "North-West Sports Promenade"),
-        ("GYM_UPPER",           "GYM_MAIN",            True,  "footway",    False, True,  "Sports Hall Corridor"),
-        ("GYM_MAIN",            "SW_ACADEMIC_BLOCK",   True,  "footway",    False, True,  "West Academic Walkway"),
-        ("SW_ACADEMIC_BLOCK",   "BOTTOM_WALKWAY",      True,  "footway",    False, True,  "South Academic Promenade"),
-        ("ADMIN_COURTYARD",     "BOTTOM_WALKWAY",      True,  "footway",    False, True,  "Courtyard South Link"),
-        ("BOTTOM_WALKWAY",      "AUDITORIUM_ENTRANCE", True,  "footway",    False, True,  "Auditorium Plaza Walk"),
-        ("ADMIN_COURTYARD",     "AUDITORIUM_ENTRANCE", True,  "footway",    False, True,  "Auditorium East Corridor"),
-        ("ADMIN_COURTYARD",     "GYM_MAIN",            True,  "footway",    False, True,  "Central-Gym Cross Corridor"),
-        ("MITS_GROUND",         "GYM_UPPER",           True,  "path",       False, True,  "Ground-Gym Connector"),
+        # North Spine & Hostels
+        ("BOYS_HOSTEL",          "MAIN_ENTRANCE",        True, "primary",    False, True,  "Hostel Main Access Road"),
+        ("BOYS_HOSTEL",          "GIRLS_HOSTEL",         True, "pedestrian", False, True,  "Hostel Cross-Way"),
+        ("GIRLS_HOSTEL",         "MAIN_ENTRANCE",        True, "pedestrian", False, True,  "Girls Hostel Avenue"),
+        ("MAIN_ENTRANCE",        "SECOND_ENTRANCE_GATE", True, "primary",    False, True,  "Main Campus Boulevard"),
+        ("MAIN_ENTRANCE",        "GROUND",               True, "path",       False, True,  "North Sports Walkway"),
+        ("GROUND",               "SECOND_ENTRANCE_GATE", True, "pedestrian", False, True,  "East Ground Promenade"),
+
+        # 2nd Entrance Gate to Academic Core & Admin
+        ("SECOND_ENTRANCE_GATE", "ADMIN_BLOCK",          True, "primary",    False, True,  "Administrative Avenue"),
+        ("SECOND_ENTRANCE_GATE", "EAST_BLOCK",           True, "pedestrian", False, True,  "East Academic Link"),
+        ("GROUND",               "KK_BLOCK",             True, "pedestrian", False, True,  "Ground-KK Connector Walk"),
+        ("GROUND",               "CIRCULAR_BLOCK",       True, "pedestrian", False, True,  "Central Ground Boulevard"),
+
+        # Admin & East Complex
+        ("ADMIN_BLOCK",          "CIRCULAR_BLOCK",       True, "pedestrian", False, True,  "Admin-Circular Promenade"),
+        ("ADMIN_BLOCK",          "EAST_BLOCK",           True, "pedestrian", False, True,  "Admin East Corridor"),
+        ("EAST_BLOCK",           "CANTEEN",              True, "pedestrian", False, True,  "Canteen Walkway"),
+        ("ADMIN_BLOCK",          "CANTEEN",              True, "footway",    False, True,  "Admin Canteen Walk"),
+        ("EAST_BLOCK",           "AUDITORIUM",           True, "footway",    False, True,  "East-Auditorium Concourse"),
+
+        # Circular Block Hub Connections
+        ("CIRCULAR_BLOCK",       "AUDITORIUM",           True, "footway",    False, True,  "Auditorium Plaza Walk"),
+        ("CIRCULAR_BLOCK",       "SOUTH_BLOCK",          True, "footway",    False, True,  "South Block Promenade"),
+        ("CIRCULAR_BLOCK",       "LIBRARY",              True, "footway",    False, True,  "Library Central Corridor"),
+        ("CIRCULAR_BLOCK",       "CSE_DEPARTMENT",       True, "footway",    False, True,  "CSE Academic Spine"),
+        ("CIRCULAR_BLOCK",       "KK_BLOCK",             True, "footway",    False, True,  "KK Block Approach"),
+
+        # North-West Academic Wing (KK, Annapurna, CSE, Gym, Research)
+        ("KK_BLOCK",             "ANNAPURNA_BLOCK",      True, "footway",    False, True,  "KK-Annapurna Corridor"),
+        ("KK_BLOCK",             "CSE_DEPARTMENT",       True, "footway",    False, True,  "KK-CSE Connector"),
+        ("ANNAPURNA_BLOCK",      "CSE_DEPARTMENT",       True, "footway",    False, True,  "Annapurna-CSE Walk"),
+        ("ANNAPURNA_BLOCK",      "GYM_MITS",             True, "footway",    False, True,  "Sports Annex Pathway"),
+        ("CSE_DEPARTMENT",       "GYM_MITS",             True, "footway",    False, True,  "CSE-Gym Walkway"),
+        ("GYM_MITS",             "RESEARCH_BLOCK",       True, "footway",    False, True,  "Gym-Research Walkway"),
+        ("CSE_DEPARTMENT",       "LIBRARY",              True, "footway",    False, True,  "CSE-Library Pathway"),
+        ("RESEARCH_BLOCK",       "LIBRARY",              True, "footway",    False, True,  "Research-Library Promenade"),
+
+        # South & Auditorium Connections
+        ("LIBRARY",              "SOUTH_BLOCK",          True, "footway",    False, True,  "Library South Wing"),
+        ("SOUTH_BLOCK",          "AUDITORIUM",           True, "footway",    False, True,  "South-Auditorium Link"),
+        ("AUDITORIUM",           "CANTEEN",              True, "footway",    False, True,  "Auditorium-Canteen Court"),
     ]
 
     for u, v, bidir, highway, stairs, wheelchair, name in edges:
@@ -77,7 +108,7 @@ def create_mits_synthetic_campus_graph() -> nx.DiGraph:
         cv = (G.nodes[v]["y"], G.nodes[v]["x"])
         dist = float(haversine_distance(cu, cv))
         attrs = {
-            "length": round(dist, 2),
+            "length": round(dist, 4),
             "highway": highway,
             "stairs": stairs,
             "wheelchair": wheelchair,
@@ -113,15 +144,17 @@ class CampusGraphManager:
         if not force_refresh and os.path.exists(cache_path):
             try:
                 G = nx.read_graphml(cache_path)
-                for _, d in G.nodes(data=True):
-                    d["x"] = float(d.get("x", 0.0))
-                    d["y"] = float(d.get("y", 0.0))
-                for _, _, d in G.edges(data=True):
-                    d["length"] = float(d.get("length", 1.0))
-                    d["stairs"] = str(d.get("stairs", "False")).lower() == "true"
-                    d["wheelchair"] = str(d.get("wheelchair", "True")).lower() != "false"
-                self.graph = G
-                return self.graph
+                # Verify that all 17 landmarks are present
+                if G.number_of_nodes() >= 17:
+                    for _, d in G.nodes(data=True):
+                        d["x"] = float(d.get("x", 0.0))
+                        d["y"] = float(d.get("y", 0.0))
+                    for _, _, d in G.edges(data=True):
+                        d["length"] = float(d.get("length", 1.0))
+                        d["stairs"] = str(d.get("stairs", "False")).lower() == "true"
+                        d["wheelchair"] = str(d.get("wheelchair", "True")).lower() != "false"
+                    self.graph = G
+                    return self.graph
             except Exception:
                 pass
 

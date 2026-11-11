@@ -1,6 +1,6 @@
 """
-astar.py - Custom A* and Dijkstra graph search algorithms with Haversine heuristic.
-Complies with Project PRD & Implementation Guidelines.
+astar.py - Custom A* informed graph search algorithm with Haversine heuristic.
+Provides optimal shortest path computation and k-alternative path discovery.
 """
 
 import math
@@ -8,6 +8,8 @@ import heapq
 import time
 from itertools import count
 from typing import Dict, List, Tuple, Optional, Any, Callable
+
+import networkx as nx
 
 
 EARTH_RADIUS_METERS = 6371000.0
@@ -51,7 +53,7 @@ def astar_search(
         start_node: Identifier of origin node.
         goal_node: Identifier of target node.
         heuristic_func: Function h(u, v) estimating distance in meters. If None, uses haversine on node lat/lon.
-        edge_filter: Optional predicate (u, v, edge_data) -> bool. If returns False, edge is ignored (e.g. restrictions).
+        edge_filter: Optional predicate (u, v, edge_data) -> bool. If returns False, edge is ignored.
 
     Returns:
         Dict containing:
@@ -168,66 +170,44 @@ def astar_search(
     }
 
 
-def dijkstra_search(
+def find_alternative_paths(
     graph,
     start_node: Any,
     goal_node: Any,
+    k: int = 2,
     edge_filter: Optional[Callable[[Any, Any, Dict], bool]] = None
-) -> Dict[str, Any]:
+) -> List[Dict[str, Any]]:
     """
-    Executes uninformed Uniform-Cost Search / Dijkstra search (h(n) = 0).
-    Uses identical graph topology, edge weights, and expansion accounting as A*.
+    Finds up to k alternative paths using edge-penalty variant of A* search.
+    Returns list of alternative path dictionaries.
     """
-    start_time = time.perf_counter()
+    primary = astar_search(graph, start_node, goal_node, edge_filter=edge_filter)
+    if not primary["success"] or len(primary["path"]) < 2:
+        return []
 
-    # Pass zero heuristic to verify behavior and comparability
-    def zero_heuristic(u, v):
-        return 0.0
+    alternatives = []
+    excluded_edges = set()
+    primary_path = primary["path"]
 
-    res = astar_search(
-        graph=graph,
-        start_node=start_node,
-        goal_node=goal_node,
-        heuristic_func=zero_heuristic,
-        edge_filter=edge_filter
-    )
-    res["algorithm"] = "Dijkstra"
-    res["execution_time_ms"] = round((time.perf_counter() - start_time) * 1000.0, 3)
-    return res
+    # Try removing intermediate edges from primary path to force alternate branching
+    for i in range(len(primary_path) - 1):
+        if len(alternatives) >= k:
+            break
+        u, v = primary_path[i], primary_path[i+1]
+        excluded = {(u, v), (v, u)}
 
+        def alt_filter(edge_u, edge_v, data):
+            if (edge_u, edge_v) in excluded or (edge_v, edge_u) in excluded:
+                return False
+            if edge_filter and not edge_filter(edge_u, edge_v, data):
+                return False
+            return True
 
-def compare_searches(astar_result: Dict[str, Any], dijkstra_result: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Computes comparative analytics between A* and Dijkstra runs.
-    """
-    n_a = astar_result.get("nodes_expanded", 0)
-    n_d = dijkstra_result.get("nodes_expanded", 0)
-    t_a = astar_result.get("execution_time_ms", 0.0)
-    t_d = dijkstra_result.get("execution_time_ms", 0.0)
-    d_a = astar_result.get("distance_m", 0.0)
-    d_d = dijkstra_result.get("distance_m", 0.0)
+        alt_res = astar_search(graph, start_node, goal_node, edge_filter=alt_filter)
+        if alt_res["success"] and alt_res["path"] != primary_path:
+            # Check if this alternate is already found
+            already_have = any(a["path"] == alt_res["path"] for a in alternatives)
+            if not already_have:
+                alternatives.append(alt_res)
 
-    # Node reduction percentage: (N_d - N_a) / N_d * 100
-    if n_d > 0:
-        expansion_reduction_pct = round(((n_d - n_a) / n_d) * 100.0, 1)
-    else:
-        expansion_reduction_pct = 0.0
-
-    # Speedup: T_d / T_a
-    speedup = round(t_d / t_a, 2) if t_a > 0 else 1.0
-
-    # Optimality agreement check: distances must match within 0.1m tolerance
-    is_optimal_match = abs(d_a - d_d) < 0.1 and astar_result["success"] == dijkstra_result["success"]
-
-    return {
-        "is_optimal_match": is_optimal_match,
-        "expansion_reduction_pct": expansion_reduction_pct,
-        "nodes_expanded_diff": n_d - n_a,
-        "speedup": speedup,
-        "astar_nodes": n_a,
-        "dijkstra_nodes": n_d,
-        "astar_time_ms": t_a,
-        "dijkstra_time_ms": t_d,
-        "astar_distance_m": d_a,
-        "dijkstra_distance_m": d_d
-    }
+    return alternatives

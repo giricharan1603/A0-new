@@ -2,11 +2,14 @@
 app.py — MITS Professional Navigation & Graph Search System.
 Combines:
   1. Real-World Road Navigator (Any city/village: Madanapalle, Tirupati, etc.)
-  2. MITS Campus Landmark Navigator (Detailed inside-college routing)
-Equipped with live fuzzy autocomplete, instant CARTO map rendering with user API key,
-true A* & Dijkstra algorithm benchmarks, and a 1-click mode switcher.
+  2. MITS Campus Landmark Navigator (Detailed inside-college routing for all 17 campus blocks)
+Equipped with live fuzzy autocomplete, instant Google Maps / CARTO rendering,
+pure A* informed search, multi-path visualization with green shortest-path highlight,
+and draggable pin repositioning.
 """
 
+import os
+import html
 import streamlit as st
 import streamlit.components.v1 as components
 import folium
@@ -23,35 +26,37 @@ from core.tracer import record_search_trace
 # PAGE CONFIG
 # ─────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="MITS A* & Dijkstra Route Planner",
+    page_title="MITS A* Campus & Road Route Planner",
     page_icon="🗺️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # ─────────────────────────────────────────────────────────────
-# MAP TILES CONFIGURATION (GOOGLE MAPS PRIMARY + CARTO WITH USER KEY)
+# MAP TILES CONFIGURATION (GOOGLE MAPS PRIMARY + CARTO WITH ENV / PUBLIC SUPPORT)
 # ─────────────────────────────────────────────────────────────
-CARTO_API_KEY = "cb1_3sam_1_2355f1d9cf8d0ccc9cceaf27"
+CARTO_API_KEY = os.getenv("CARTO_API_KEY", "")
+carto_key_param = f"?api_key={CARTO_API_KEY}" if CARTO_API_KEY else ""
 
-# Google Maps tile layers (Clean, zero watermark, crystal-clear labels)
+# Google Maps tile layers
 GOOGLE_MAPS_STREETS = "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
 GOOGLE_MAPS_HYBRID  = "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
 GOOGLE_MAPS_TERRAIN = "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
 GOOGLE_ATTRIBUTION  = "Map data &copy; Google Maps"
 
-# CARTO tile layers with user API key
-CARTO_LIGHT_TILES = f"https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png?api_key={CARTO_API_KEY}"
-CARTO_DARK_TILES  = f"https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}@2x.png?api_key={CARTO_API_KEY}"
+# CARTO tile layers
+CARTO_LIGHT_TILES = f"https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}@2x.png{carto_key_param}"
+CARTO_DARK_TILES  = f"https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}@2x.png{carto_key_param}"
 CARTO_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
 
 OPENSTREETMAP_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 OPENSTREETMAP_ATTR  = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 
+
 def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
     """
     Creates a high-definition Folium map with Google Maps as default primary base layer,
-    and a LayerControl selector including Google Satellite, CARTO (with user API key), and OSM.
+    and a LayerControl selector including Google Satellite, CARTO, and OSM.
     """
     fmap = folium.Map(
         location=location,
@@ -60,7 +65,7 @@ def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
         prefer_canvas=prefer_canvas
     )
 
-    # 1. Primary Default: Google Maps Streets (Clear, high-res, zero watermark)
+    # 1. Primary Default: Google Maps Streets
     folium.TileLayer(
         tiles=GOOGLE_MAPS_STREETS,
         attr=GOOGLE_ATTRIBUTION,
@@ -79,13 +84,13 @@ def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
         show=False
     ).add_to(fmap)
 
-    # 3. CARTO Tiles with user API Key
-    carto_tile = CARTO_DARK_TILES if st.session_state.dark_mode else CARTO_LIGHT_TILES
-    carto_name = "CARTO Dark Matter" if st.session_state.dark_mode else "CARTO Positron"
+    # 3. CARTO Tiles
+    carto_tile = CARTO_DARK_TILES if st.session_state.get("dark_mode", False) else CARTO_LIGHT_TILES
+    carto_name = "CARTO Dark Matter" if st.session_state.get("dark_mode", False) else "CARTO Positron"
     folium.TileLayer(
         tiles=carto_tile,
         attr=CARTO_ATTRIBUTION,
-        name=f"{carto_name} (User Key)",
+        name=carto_name,
         max_zoom=19,
         control=True,
         show=False
@@ -101,33 +106,102 @@ def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
         show=False
     ).add_to(fmap)
 
-    # Layer switch controller in top-right of map
     folium.LayerControl(position="topright").add_to(fmap)
     return fmap
 
+
 # ─────────────────────────────────────────────────────────────
-# SESSION STATE INITIALIZATION
+# STATE INITIALIZATION (SINGLE CLEAN SOURCE OF TRUTH)
 # ─────────────────────────────────────────────────────────────
 if "app_mode" not in st.session_state:
     st.session_state.app_mode = "campus"  # 'realworld' or 'campus'
 if "dark_mode" not in st.session_state:
     st.session_state.dark_mode = False
-if "real_start_text" not in st.session_state:
-    st.session_state.real_start_text = "Madanapalle"
-if "real_end_text" not in st.session_state:
-    st.session_state.real_end_text = "Tirupati"
-if "real_start_place" not in st.session_state:
-    st.session_state.real_start_place = {"name": "Madanapalle", "short_name": "Madanapalle, Andhra Pradesh", "lat": 13.63051, "lon": 78.47781}
-if "real_end_place" not in st.session_state:
-    st.session_state.real_end_place = {"name": "Tirupati", "short_name": "Tirupati, Andhra Pradesh", "lat": 13.6316, "lon": 79.4232}
-if "real_route_result" not in st.session_state:
-    st.session_state.real_route_result = None
 if "travel_mode" not in st.session_state:
     st.session_state.travel_mode = "drive"
 if "campus_start_id" not in st.session_state:
-    st.session_state.campus_start_id = "MAIN_GATE"
+    st.session_state.campus_start_id = "MAIN_ENTRANCE"
 if "campus_goal_id" not in st.session_state:
-    st.session_state.campus_goal_id = "ADMIN_COURTYARD"
+    st.session_state.campus_goal_id = "ADMIN_BLOCK"
+
+# Real-world single-source text state bound to widgets
+if "origin_query" not in st.session_state:
+    st.session_state.origin_query = "Madanapalle"
+if "dest_query" not in st.session_state:
+    st.session_state.dest_query = "Tirupati"
+
+# Matched place dictionaries
+if "real_start_place" not in st.session_state:
+    st.session_state.real_start_place = {"name": "Madanapalle", "short_name": "Madanapalle, AP", "lat": 13.5558, "lon": 78.5015}
+if "real_end_place" not in st.session_state:
+    st.session_state.real_end_place = {"name": "Tirupati", "short_name": "Tirupati, AP", "lat": 13.6316, "lon": 79.4232}
+if "real_route_result" not in st.session_state:
+    st.session_state.real_route_result = None
+
+
+# ─────────────────────────────────────────────────────────────
+# LIFECYCLE SAFE CALLBACKS (RUN BEFORE WIDGETS INSTANTIATE)
+# ─────────────────────────────────────────────────────────────
+def on_origin_change():
+    """Callback triggered on origin text edit."""
+    q = st.session_state.origin_query.strip()
+    if q:
+        matches = geocode(q, limit=4)
+        if matches:
+            st.session_state.real_start_place = matches[0]
+    st.session_state.real_route_result = None
+
+
+def on_dest_change():
+    """Callback triggered on destination text edit."""
+    q = st.session_state.dest_query.strip()
+    if q:
+        matches = geocode(q, limit=4)
+        if matches:
+            st.session_state.real_end_place = matches[0]
+    st.session_state.real_route_result = None
+
+
+def swap_locations():
+    """Safely swaps origin and destination before widgets render."""
+    orig = st.session_state.origin_query
+    dest = st.session_state.dest_query
+    st.session_state.origin_query = dest
+    st.session_state.dest_query = orig
+    st.session_state.real_start_place, st.session_state.real_end_place = (
+        st.session_state.real_end_place, st.session_state.real_start_place
+    )
+    st.session_state.real_route_result = None
+
+
+def apply_quick_destination(sp, ep):
+    """Safely applies quick destination pair before widgets render."""
+    st.session_state.origin_query = sp["name"]
+    st.session_state.dest_query = ep["name"]
+    st.session_state.real_start_place = sp
+    st.session_state.real_end_place = ep
+    st.session_state.real_route_result = route_realworld(
+        start_lat=sp["lat"],
+        start_lon=sp["lon"],
+        end_lat=ep["lat"],
+        end_lon=ep["lon"],
+        start_name=sp.get("short_name", "Start"),
+        end_name=ep.get("short_name", "Destination"),
+        travel_mode=st.session_state.travel_mode
+    )
+
+
+def apply_suggestion(target, place):
+    """Safely applies suggestion pill before widgets render."""
+    p_name = place["short_name"].split(",")[0].strip()
+    if target == "start":
+        st.session_state.origin_query = p_name
+        st.session_state.real_start_place = place
+    else:
+        st.session_state.dest_query = p_name
+        st.session_state.real_end_place = place
+    st.session_state.real_route_result = None
+
 
 # ─────────────────────────────────────────────────────────────
 # THEME TOKENS
@@ -140,18 +214,13 @@ if st.session_state.dark_mode:
         "text": "#FFFFFF",
         "muted": "#9BB2FF",
         "accent": "#3366FF",
-        "accent_purple": "#668CFF",
         "green": "#00E676",
         "red": "#FF3B30",
-        "input_bg": "#0D183D",
-        "input_border": "#0000FF",
         "step_bg": "#0B1536",
-        "step_border": "#0000FF",
         "metric_bg": "rgba(10, 18, 48, 0.96)",
         "metric_border": "#0000FF",
         "header_grad": "linear-gradient(135deg, #0000FF 0%, #0012A3 60%, #050A30 100%)",
-        "map_tile": CARTO_DARK_TILES,
-        "route_color": "#3366FF",
+        "route_color": "#00C853",
     }
 else:
     T = {
@@ -161,18 +230,13 @@ else:
         "text": "#0A0E27",
         "muted": "#4A5568",
         "accent": "#0000FF",
-        "accent_purple": "#0000FF",
         "green": "#00A854",
         "red": "#E02020",
-        "input_bg": "#FFFFFF",
-        "input_border": "#C7D7FE",
         "step_bg": "#F0F4FF",
-        "step_border": "#0000FF",
         "metric_bg": "#FFFFFF",
         "metric_border": "#D5E0FF",
         "header_grad": "linear-gradient(135deg, #0000FF 0%, #0018D4 50%, #0000CC 100%)",
-        "map_tile": CARTO_LIGHT_TILES,
-        "route_color": "#0000FF",
+        "route_color": "#00C853",
     }
 
 # ─────────────────────────────────────────────────────────────
@@ -180,14 +244,12 @@ else:
 # ─────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-  /* Base App Background & Typography */
   .stApp {{
     background-color: {T['bg']};
     color: {T['text']};
   }}
   #MainMenu, footer {{ visibility: hidden; }}
 
-  /* Top Header Banner in Signature Blue #0000FF */
   .top-banner {{
     background: {T['header_grad']};
     border-radius: 14px;
@@ -225,7 +287,6 @@ st.markdown(f"""
     margin-top: 10px;
   }}
 
-  /* Buttons & Interactions in Pure Blue #0000FF & White */
   .stButton > button {{
     border-radius: 8px !important;
     font-weight: 700 !important;
@@ -243,35 +304,12 @@ st.markdown(f"""
     box-shadow: 0 6px 18px rgba(0, 0, 255, 0.40) !important;
     color: #FFFFFF !important;
   }}
-  .stButton > button[kind="secondary"] {{
-    background-color: #FFFFFF !important;
-    color: #0000FF !important;
-    border: 1.5px solid #0000FF !important;
-  }}
-  .stButton > button[kind="secondary"]:hover {{
-    background-color: #F0F4FF !important;
-    color: #0000CC !important;
-    border-color: #0000CC !important;
-  }}
 
-  /* Mode Switch Button */
-  .mode-switch-btn {{
-    background: #FFFFFF !important;
-    color: #0000FF !important;
-    font-weight: 800 !important;
-    border-radius: 8px !important;
-    padding: 10px 18px !important;
-    border: 2px solid #FFFFFF !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 255, 0.20) !important;
-  }}
-
-  /* Sidebar Styling */
   section[data-testid="stSidebar"] {{
     background-color: #FFFFFF !important;
     border-right: 1.5px solid #D5E0FF !important;
   }}
 
-  /* Cards in White with Blue Border */
   .custom-card {{
     background: {T['card']};
     border: 1.5px solid {T['card_border']};
@@ -289,7 +327,6 @@ st.markdown(f"""
     margin-bottom: 10px;
   }}
 
-  /* Metric Tiles */
   .metric-row {{
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -325,11 +362,10 @@ st.markdown(f"""
     margin-top: 3px;
   }}
 
-  /* Turn-by-Turn Navigation Step Cards */
   .step-card {{
     background: {T['step_bg']};
     border: 1px solid #D5E0FF;
-    border-left: 5px solid #0000FF;
+    border-left: 5px solid #00C853;
     padding: 12px 16px;
     margin-bottom: 10px;
     border-radius: 0 8px 8px 0;
@@ -338,32 +374,12 @@ st.markdown(f"""
   .step-text {{
     font-weight: 700;
     color: #0A0E27;
-    font-size: 0.88rem;
+    font-size: 0.90rem;
   }}
   .step-subtext {{
     color: #4B5563;
     font-size: 0.78rem;
     margin-top: 2px;
-  }}
-  
-  /* Suggestion Pills */
-  .suggestion-pill {{
-    display: inline-block;
-    background: #FFFFFF;
-    border: 1.5px solid #C7D7FE;
-    border-radius: 6px;
-    padding: 4px 12px;
-    font-size: 0.78rem;
-    color: #0000FF;
-    font-weight: 600;
-    margin: 2px 4px 4px 0;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }}
-  .suggestion-pill:hover {{
-    background: #0000FF;
-    color: #FFFFFF;
-    border-color: #0000FF;
   }}
 </style>
 """, unsafe_allow_html=True)
@@ -375,7 +391,7 @@ st.markdown(f"""
 @st.cache_resource
 def load_campus_service() -> CampusRouteService:
     mgr = CampusGraphManager()
-    mgr.get_or_load_graph()
+    mgr.get_or_load_graph(force_refresh=True)
     return CampusRouteService(mgr)
 
 
@@ -396,13 +412,13 @@ with head_col1:
         st.markdown("""
         <div class="top-banner">
           <div>
-            <div class="top-title">🗺️ Real-World A* & Dijkstra Route Planner</div>
-            <div class="top-sub">Instant highway & village navigation using OpenStreetMap road network & CARTO tiles</div>
+            <div class="top-title">🗺️ Real-World A* Route Planner</div>
+            <div class="top-sub">Instant highway, town & village navigation using OpenStreetMap road network & Google/CARTO tiles</div>
             <div>
-              <span class="badge-tag">⚡ A* Algorithm</span>
-              <span class="badge-tag">🔵 Dijkstra Baseline</span>
-              <span class="badge-tag">🗺️ CARTO Maps</span>
-              <span class="badge-tag">🎓 MITS Madanapalle</span>
+              <span class="badge-tag">⚡ A* Informed Search</span>
+              <span class="badge-tag">🟢 Shortest Path Highlight</span>
+              <span class="badge-tag">🏘️ Village & City Bypass Steps</span>
+              <span class="badge-tag">📍 Draggable Pins</span>
             </div>
           </div>
         </div>
@@ -412,11 +428,11 @@ with head_col1:
         <div class="top-banner">
           <div>
             <div class="top-title">🏫 MITS Inside-Campus A* Route Planner</div>
-            <div class="top-sub">High-precision pedestrian landmark navigation inside MITS Madanapalle Campus</div>
+            <div class="top-sub">High-precision pedestrian landmark navigation across all 17 buildings in MITS Madanapalle Campus</div>
             <div>
-              <span class="badge-tag">🏫 Campus Landmarks</span>
-              <span class="badge-tag">🚶 Walk / Accessibility Paths</span>
-              <span class="badge-tag">⚡ A* Search</span>
+              <span class="badge-tag">🏫 17 Campus Landmarks</span>
+              <span class="badge-tag">🚶 Walkways & Corridors</span>
+              <span class="badge-tag">⚡ A* Shortest Route in Green</span>
             </div>
           </div>
         </div>
@@ -439,12 +455,16 @@ with head_col2:
 # ─────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(f"""
-    <div style="text-align:center; padding: 10px 0;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
       <div style="font-size: 2.2rem;">{'🌍' if st.session_state.app_mode == 'realworld' else '🏫'}</div>
-      <div style="font-weight: 800; font-size: 1.05rem; color:{T['text']};">
-        {'Real-World Navigator' if st.session_state.app_mode == 'realworld' else 'MITS Campus Navigator'}
+      <div>
+        <div style="font-weight: 800; font-size: 1.1rem; color: #0000FF;">
+          {'Real-World Navigator' if st.session_state.app_mode == 'realworld' else 'MITS Campus Navigator'}
+        </div>
+        <div style="font-size: 0.74rem; color: #4B5563;">
+          {'Intercity & Village Road Network' if st.session_state.app_mode == 'realworld' else '17 Ground-Truth Campus Blocks'}
+        </div>
       </div>
-      <div style="font-size: 0.74rem; color:{T['muted']};">AI Lab Mini-Project (23CSE109 / 23CSE208)</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -474,23 +494,30 @@ with st.sidebar:
         st.markdown("---")
         st.markdown("<div class='card-label'>📍 Quick Popular Destinations</div>", unsafe_allow_html=True)
         quick_pairs = [
-            ("Madanapalle → Tirupati", "Madanapalle", "Tirupati"),
-            ("MITS Campus → Horsley Hills", "MITS Madanapalle Campus (Angallu)", "Horsley Hills"),
-            ("Madanapalle → Bengaluru", "Madanapalle", "Bengaluru (Bangalore)"),
-            ("Madanapalle → Kadapa", "Madanapalle", "Kadapa (Cuddapah)"),
-            ("Tirupati → Chennai", "Tirupati", "Chennai"),
+            ("Madanapalle → Tirupati",
+             {"name": "Madanapalle", "short_name": "Madanapalle, AP", "display_name": "Madanapalle, Andhra Pradesh", "lat": 13.5558, "lon": 78.5015},
+             {"name": "Tirupati",    "short_name": "Tirupati, AP",    "display_name": "Tirupati, Andhra Pradesh",    "lat": 13.6316, "lon": 79.4232}),
+            ("MITS → Horsley Hills",
+             {"name": "MITS Campus", "short_name": "MITS Campus (Angallu)", "display_name": "MITS Madanapalle Campus", "lat": 13.633266, "lon": 78.479932},
+             {"name": "Horsley Hills", "short_name": "Horsley Hills, AP", "display_name": "Horsley Hills, AP", "lat": 13.6500, "lon": 78.3900}),
+            ("Madanapalle → Bengaluru",
+             {"name": "Madanapalle", "short_name": "Madanapalle, AP", "display_name": "Madanapalle, Andhra Pradesh", "lat": 13.5558, "lon": 78.5015},
+             {"name": "Bengaluru",   "short_name": "Bengaluru, KA",   "display_name": "Bengaluru, Karnataka",         "lat": 12.9716, "lon": 77.5946}),
+            ("Madanapalle → Kadapa",
+             {"name": "Madanapalle", "short_name": "Madanapalle, AP", "display_name": "Madanapalle, Andhra Pradesh", "lat": 13.5558, "lon": 78.5015},
+             {"name": "Kadapa",      "short_name": "Kadapa, AP",      "display_name": "Kadapa (Cuddapah), AP",        "lat": 14.4674, "lon": 78.8241}),
+            ("Tirupati → Chennai",
+             {"name": "Tirupati",  "short_name": "Tirupati, AP",  "display_name": "Tirupati, Andhra Pradesh", "lat": 13.6316, "lon": 79.4232},
+             {"name": "Chennai",   "short_name": "Chennai, TN",   "display_name": "Chennai, Tamil Nadu",      "lat": 13.0827, "lon": 80.2707}),
         ]
-        for q_label, q_start, q_end in quick_pairs:
-            if st.button(f"🚀 {q_label}", use_container_width=True, key=f"btn_{q_label}"):
-                s_res = geocode(q_start, limit=1)
-                e_res = geocode(q_end, limit=1)
-                if s_res and e_res:
-                    st.session_state.real_start_text = q_start
-                    st.session_state.real_end_text = q_end
-                    st.session_state.real_start_place = s_res[0]
-                    st.session_state.real_end_place = e_res[0]
-                    st.session_state.real_route_result = None
-                    st.rerun()
+        for q_label, q_sp, q_ep in quick_pairs:
+            st.button(
+                f"🚀 {q_label}",
+                use_container_width=True,
+                key=f"btn_{q_label}",
+                on_click=apply_quick_destination,
+                args=(q_sp, q_ep)
+            )
 
     else:
         campus_walk_mode = st.radio(
@@ -504,7 +531,6 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("<div class='card-label'>📐 Heuristic Function</div>", unsafe_allow_html=True)
     st.caption("**A\\*** informed search: $f(n) = g(n) + h(n)$, where $h(n)$ is Great-Circle Haversine distance.")
-    st.caption("**Dijkstra** uninformed search: $h(n) = 0$, baseline guarantee for 100% path optimality.")
 
 
 # ══════════════════════════════════════════════════════════════
@@ -513,78 +539,71 @@ with st.sidebar:
 if st.session_state.app_mode == "realworld":
 
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    st.markdown("<div class='card-label'>📍 Real-Time Origin & Destination Search</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card-label'>📍 Origin & Destination Search</div>", unsafe_allow_html=True)
 
     input_c1, swap_c, input_c2 = st.columns([10, 1, 10])
 
     with input_c1:
-        s_val = st.text_input(
-            "🚩 Starting Point (Type 'ma dea', 'mada', or any city/village)",
-            value=st.session_state.real_start_text,
-            key="real_start_input",
+        st.text_input(
+            "🚩 Starting Point (Type town, village, or landmark)",
+            key="origin_query",
+            on_change=on_origin_change,
             placeholder="e.g. Madanapalle, MITS Campus, Angallu..."
         )
-        if s_val != st.session_state.real_start_text:
-            st.session_state.real_start_text = s_val
-            st.session_state.real_route_result = None
-            # Update suggestion candidates
-            s_candidates = geocode(s_val, limit=4)
-            if s_candidates:
-                st.session_state.real_start_place = s_candidates[0]
 
     with swap_c:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        if st.button("⇄", help="Swap Start and Destination", use_container_width=True):
-            st.session_state.real_start_text, st.session_state.real_end_text = (
-                st.session_state.real_end_text, st.session_state.real_start_text
-            )
-            st.session_state.real_start_place, st.session_state.real_end_place = (
-                st.session_state.real_end_place, st.session_state.real_start_place
-            )
-            st.session_state.real_route_result = None
-            st.rerun()
+        st.button("⇄", help="Swap Start and Destination", use_container_width=True, on_click=swap_locations)
 
     with input_c2:
-        e_val = st.text_input(
-            "🎯 Destination Point (Type 'tirup', 'tiru', or any destination)",
-            value=st.session_state.real_end_text,
-            key="real_end_input",
+        st.text_input(
+            "🎯 Destination Point (Type town, village, or landmark)",
+            key="dest_query",
+            on_change=on_dest_change,
             placeholder="e.g. Tirupati, Horsley Hills, Kadapa..."
         )
-        if e_val != st.session_state.real_end_text:
-            st.session_state.real_end_text = e_val
-            st.session_state.real_route_result = None
-            e_candidates = geocode(e_val, limit=4)
-            if e_candidates:
-                st.session_state.real_end_place = e_candidates[0]
 
-    # Live Suggestion Pills
+    # Live Suggestion Pills (Rendered dynamically below input boxes)
     sug_c1, sug_c2 = st.columns(2)
     with sug_c1:
-        if st.session_state.real_start_text:
-            s_matches = geocode(st.session_state.real_start_text, limit=4)
+        q_start = st.session_state.origin_query.strip()
+        if q_start:
+            s_matches = geocode(q_start, limit=4)
             if s_matches:
-                st.markdown("<small style='color: " + T['muted'] + ";'>Start Suggestions (Click to apply):</small><br>", unsafe_allow_html=True)
+                st.markdown("<small style='color: #4A5568;'>💡 Start Suggestions (Click to apply):</small>", unsafe_allow_html=True)
+                cols = st.columns(len(s_matches))
                 for idx, sm in enumerate(s_matches):
-                    if st.button(f"📍 {sm['short_name']}", key=f"sm_{idx}_{sm['lat']}", help=sm['display_name']):
-                        st.session_state.real_start_text = sm['short_name'].split(',')[0]
-                        st.session_state.real_start_place = sm
-                        st.session_state.real_route_result = None
-                        st.rerun()
+                    with cols[idx]:
+                        label = sm['short_name'].split(',')[0].strip()
+                        st.button(
+                            f"📍 {label}",
+                            key=f"sug_s_{idx}_{sm['lat']}",
+                            on_click=apply_suggestion,
+                            args=("start", sm),
+                            help=sm['display_name'],
+                            use_container_width=True
+                        )
 
     with sug_c2:
-        if st.session_state.real_end_text:
-            e_matches = geocode(st.session_state.real_end_text, limit=4)
+        q_end = st.session_state.dest_query.strip()
+        if q_end:
+            e_matches = geocode(q_end, limit=4)
             if e_matches:
-                st.markdown("<small style='color: " + T['muted'] + ";'>Destination Suggestions (Click to apply):</small><br>", unsafe_allow_html=True)
+                st.markdown("<small style='color: #4A5568;'>💡 Destination Suggestions (Click to apply):</small>", unsafe_allow_html=True)
+                cols_e = st.columns(len(e_matches))
                 for idx, em in enumerate(e_matches):
-                    if st.button(f"🎯 {em['short_name']}", key=f"em_{idx}_{em['lat']}", help=em['display_name']):
-                        st.session_state.real_end_text = em['short_name'].split(',')[0]
-                        st.session_state.real_end_place = em
-                        st.session_state.real_route_result = None
-                        st.rerun()
+                    with cols_e[idx]:
+                        label = em['short_name'].split(',')[0].strip()
+                        st.button(
+                            f"🎯 {label}",
+                            key=f"sug_e_{idx}_{em['lat']}",
+                            on_click=apply_suggestion,
+                            args=("dest", em),
+                            help=em['display_name'],
+                            use_container_width=True
+                        )
 
-    # Route Compute Button
+    # Route Summary & Compute Button
     st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
     btn_col1, btn_col2 = st.columns([4, 1])
     with btn_col1:
@@ -592,10 +611,12 @@ if st.session_state.app_mode == "realworld":
         ep = st.session_state.real_end_place
         if sp and ep:
             d_straight = haversine_km(sp["lat"], sp["lon"], ep["lat"], ep["lon"])
+            safe_sp = html.escape(sp.get('short_name', 'Start'))
+            safe_ep = html.escape(ep.get('short_name', 'End'))
             st.markdown(
                 f"<div style='font-size:0.85rem; color:{T['text']}; padding-top:8px;'>"
-                f"🚩 <b>{sp.get('short_name','Start')}</b> &nbsp;→&nbsp; "
-                f"🎯 <b>{ep.get('short_name','End')}</b> &nbsp;|&nbsp; "
+                f"🚩 <b>{safe_sp}</b> &nbsp;→&nbsp; "
+                f"🎯 <b>{safe_ep}</b> &nbsp;|&nbsp; "
                 f"<span style='color:{T['muted']}'>Straight-line: ~{d_straight:.1f} km</span>"
                 f"</div>",
                 unsafe_allow_html=True
@@ -607,7 +628,7 @@ if st.session_state.app_mode == "realworld":
 
     # Trigger Computation
     if compute_route_btn or (st.session_state.real_route_result is None and sp and ep):
-        with st.spinner("Calculating optimal real road corridor with A* and Dijkstra..."):
+        with st.spinner("Calculating optimal route with A* informed search..."):
             res = route_realworld(
                 start_lat=sp["lat"],
                 start_lon=sp["lon"],
@@ -615,8 +636,7 @@ if st.session_state.app_mode == "realworld":
                 end_lon=ep["lon"],
                 start_name=sp.get("short_name", "Start"),
                 end_name=ep.get("short_name", "Destination"),
-                travel_mode=st.session_state.travel_mode,
-                run_benchmark=True
+                travel_mode=st.session_state.travel_mode
             )
             st.session_state.real_route_result = res
 
@@ -626,8 +646,6 @@ if st.session_state.app_mode == "realworld":
     ep = st.session_state.real_end_place
 
     if route_res and route_res.get("status") == "SUCCESS":
-        # 4 Metric Cards
-        cmp = route_res.get("comparison") or {}
         st.markdown(f"""
         <div class="metric-row">
           <div class="metric-box">
@@ -646,9 +664,9 @@ if st.session_state.app_mode == "realworld":
             <div class="metric-delta">{route_res['astar']['execution_time_ms']:.2f} ms</div>
           </div>
           <div class="metric-box">
-            <div class="metric-lbl">A* vs Dijkstra Efficiency</div>
-            <div class="metric-val">{cmp.get('expansion_reduction_pct', 0)}%</div>
-            <div class="metric-delta">Search reduction vs baseline</div>
+            <div class="metric-lbl">Graph Size</div>
+            <div class="metric-val">{route_res.get('graph_nodes', '—')}</div>
+            <div class="metric-delta">{route_res.get('graph_edges', '—')} edges</div>
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -658,8 +676,10 @@ if st.session_state.app_mode == "realworld":
         r_map_col, r_dir_col = st.columns([11, 7])
 
         with r_map_col:
+            safe_sname = html.escape(sp.get('short_name', 'Origin'))
+            safe_ename = html.escape(ep.get('short_name', 'Destination'))
             st.markdown(
-                f"<div class='card-label'>🗺️ Live Google Map / CARTO Layer — {sp.get('short_name','')} to {ep.get('short_name','')}</div>",
+                f"<div class='card-label'>🗺️ Live Route Map & Pin Drag — {safe_sname} to {safe_ename}</div>",
                 unsafe_allow_html=True
             )
             coords = route_res["path_coords"]
@@ -673,115 +693,144 @@ if st.session_state.app_mode == "realworld":
             )
             fmap.fit_bounds([[min(lats), min(lons)], [max(lats), max(lons)]], padding=[45, 45])
 
-            # Animated Polyline
+            # 1. Draw available alternative paths FIRST in dashed grey
+            alternatives = route_res.get("alternatives", [])
+            for i, alt in enumerate(alternatives):
+                folium.PolyLine(
+                    alt["coords"],
+                    color="#718096",
+                    weight=4,
+                    opacity=0.75,
+                    dash_array="8 6",
+                    tooltip=f"Alternative Route {i+1}: {alt.get('distance_km','?')} km"
+                ).add_to(fmap)
+
+            # 2. Highlight the SHORTEST PATH in vibrant GREEN (#00C853)
             try:
                 AntPath(
                     locations=coords,
-                    color=T["route_color"],
-                    weight=6,
-                    opacity=0.92,
-                    delay=700,
-                    dash_array=[15, 30],
-                    tooltip=f"Optimal A* Highway Path ({route_res['distance_km']} km)"
+                    color="#00C853",
+                    pulse_color="#B9F6CA",
+                    weight=7,
+                    opacity=0.95,
+                    delay=600,
+                    dash_array=[12, 24],
+                    tooltip=f"⚡ Optimal Shortest A* Path: {route_res['distance_km']} km"
                 ).add_to(fmap)
             except Exception:
-                folium.PolyLine(coords, color=T["route_color"], weight=6, opacity=0.9).add_to(fmap)
+                folium.PolyLine(coords, color="#00C853", weight=7, opacity=0.95).add_to(fmap)
 
-            # Start Marker
+            # 3. Add Draggable Start Pin (Green)
             folium.Marker(
                 [sp["lat"], sp["lon"]],
-                popup=folium.Popup(f"<b>🚩 Start:</b> {sp.get('short_name', '')}", max_width=220),
-                tooltip=f"Start: {sp.get('short_name', '')}",
+                popup=folium.Popup(f"<b>🚩 Start:</b> {safe_sname}<br><small>💡 Drag pin to reposition on map</small>", max_width=240),
+                tooltip=f"Start: {safe_sname} (Draggable Pin)",
+                draggable=True,
                 icon=folium.Icon(color="green", icon="play", prefix="fa")
             ).add_to(fmap)
 
-            # Destination Marker
+            # 4. Add Draggable Destination Pin (Red)
             folium.Marker(
                 [ep["lat"], ep["lon"]],
-                popup=folium.Popup(f"<b>🎯 Destination:</b> {ep.get('short_name', '')}", max_width=220),
-                tooltip=f"Destination: {ep.get('short_name', '')}",
+                popup=folium.Popup(f"<b>🎯 Destination:</b> {safe_ename}<br><small>💡 Drag pin to reposition on map</small>", max_width=240),
+                tooltip=f"Destination: {safe_ename} (Draggable Pin)",
+                draggable=True,
                 icon=folium.Icon(color="red", icon="flag", prefix="fa")
             ).add_to(fmap)
 
+            # 5. Route Paths Legend
+            legend_html = f"""
+            <div style="position:fixed;bottom:25px;left:25px;z-index:9999;background:white;
+                        padding:10px 14px;border-radius:8px;border:1.5px solid #CBD5E0;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.15);font-size:0.82rem;font-family:sans-serif;">
+              <b style="color:#1A202C;">Route Paths Legend</b><br>
+              <span style="color:#00C853;font-size:1.2rem;font-weight:bold;">&#9644;&#9644;</span> <b style="color:#00C853;">Shortest Path (Green)</b><br>
+              <span style="color:#718096;font-size:1.1rem;font-weight:bold;">- - -</span> <span style="color:#4A5568;">Alternative Available Routes ({len(alternatives)})</span>
+            </div>"""
+            fmap.get_root().html.add_child(folium.Element(legend_html))
+
             components.html(fmap._repr_html_(), height=520)
 
-        with r_dir_col:
-            st.markdown("<div class='card-label'>📋 Route Directions & Algorithm Proof</div>", unsafe_allow_html=True)
-            tabs_dir, tabs_algo = st.tabs(["Turn-by-Turn Steps", "A* vs Dijkstra Proof"])
+            # Pin drag / coordinate fine-tune controls
+            st.markdown(
+                "<div style='background:#F0F4FF; border:1px solid #C7D7FE; border-radius:8px; padding:12px 16px; margin-top:8px;'>"
+                "<b style='color:#0000FF;'>📌 Pin Position Adjuster</b><br>"
+                "<small style='color:#4A5568;'>Drag pins directly on the map above, or adjust coordinates below and click Apply to recalculate the route.</small>"
+                "</div>",
+                unsafe_allow_html=True
+            )
+            pin_c1, pin_c2, pin_c3 = st.columns([5, 5, 3])
+            with pin_c1:
+                new_slat = st.number_input("🚩 Start Latitude",  value=float(sp["lat"]), format="%.6f", step=0.001, key="pin_start_lat")
+                new_slon = st.number_input("🚩 Start Longitude", value=float(sp["lon"]), format="%.6f", step=0.001, key="pin_start_lon")
+            with pin_c2:
+                new_elat = st.number_input("🎯 Dest. Latitude",  value=float(ep["lat"]), format="%.6f", step=0.001, key="pin_end_lat")
+                new_elon = st.number_input("🎯 Dest. Longitude", value=float(ep["lon"]), format="%.6f", step=0.001, key="pin_end_lon")
+            with pin_c3:
+                st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+                if st.button("📍 Apply\nPin Positions", type="primary", use_container_width=True, key="apply_pin_btn"):
+                    st.session_state.real_start_place = {
+                        **sp, "lat": new_slat, "lon": new_slon,
+                        "short_name": f"Adjusted Pin ({new_slat:.4f}, {new_slon:.4f})"
+                    }
+                    st.session_state.real_end_place = {
+                        **ep, "lat": new_elat, "lon": new_elon,
+                        "short_name": f"Adjusted Pin ({new_elat:.4f}, {new_elon:.4f})"
+                    }
+                    st.session_state.origin_query = f"{new_slat:.4f}, {new_slon:.4f}"
+                    st.session_state.dest_query = f"{new_elat:.4f}, {new_elon:.4f}"
+                    st.session_state.real_route_result = None
+                    st.rerun()
 
-            with tabs_dir:
-                with st.container(height=460):
+        with r_dir_col:
+            st.markdown("<div class='card-label'>🏘️ Turn-by-Turn Steps (Bypass Villages & Cities)</div>", unsafe_allow_html=True)
+            if alternatives:
+                alt_info = "  |  ".join([f"Alt {i+1}: {a.get('distance_km','?')} km" for i, a in enumerate(alternatives)])
+                st.caption(f"🛤️ **{len(alternatives)} alternative route(s) in dashed grey** on the map  ·  {alt_info}")
+            with st.container(height=560):
+                st.markdown(
+                    f"<div class='step-card'><b>🚩 Origin:</b> {safe_sname}<br>"
+                    f"<small style='color:#0000FF;'>GPS: {sp['lat']:.4f}, {sp['lon']:.4f}</small></div>",
+                    unsafe_allow_html=True
+                )
+                for step in route_res["directions"]:
+                    safe_street = html.escape(step['street'])
+                    safe_instr = html.escape(step['instruction'])
                     st.markdown(
-                        f"<div class='step-card'><b>Origin:</b> {sp.get('short_name','')}<br>"
-                        f"<small>GPS: {sp['lat']:.4f}, {sp['lon']:.4f}</small></div>",
+                        f"<div class='step-card'>"
+                        f"<span class='step-text'>📍 Step {step['step_number']}: {safe_street}</span>"
+                        f"<div class='step-subtext'><b>{safe_instr}</b> &nbsp;·&nbsp; {step['segment_meters']:.0f} m (Cumulative: {step['cumulative_meters']/1000:.2f} km)</div>"
+                        f"</div>",
                         unsafe_allow_html=True
                     )
-                    for step in route_res["directions"]:
-                        st.markdown(
-                            f"<div class='step-card'>"
-                            f"<span class='step-text'>Step {step['step_number']}: {step['street']}</span>"
-                            f"<div class='step-subtext'>{step['instruction']} · {step['segment_meters']:.0f} m (Total: {step['cumulative_meters']/1000:.2f} km)</div>"
-                            f"</div>",
-                            unsafe_allow_html=True
-                        )
-                    st.success(f"🏁 Arrived at **{ep.get('short_name','')}** ({route_res['distance_km']} km)")
-
-            with tabs_algo:
-                with st.container(height=460):
-                    st.markdown("#### ⚡ A* vs Dijkstra Benchmark")
-                    df_comp = pd.DataFrame([
-                        {"Metric": "Nodes Explored", "A* Algorithm": route_res['astar']['nodes_expanded'], "Dijkstra": route_res['dijkstra']['nodes_expanded']},
-                        {"Metric": "Execution Time (ms)", "A* Algorithm": route_res['astar']['execution_time_ms'], "Dijkstra": route_res['dijkstra']['execution_time_ms']},
-                        {"Metric": "Calculated Distance (m)", "A* Algorithm": route_res['astar']['distance_m'], "Dijkstra": route_res['dijkstra']['distance_m']},
-                        {"Metric": "Optimality Agreement", "A* Algorithm": "100% (Identical Path)", "Dijkstra": "100% (Optimal Baseline)"},
-                    ])
-                    st.dataframe(df_comp, use_container_width=True, hide_index=True)
-
-                    chart_data = pd.DataFrame({
-                        "Algorithm": ["A* Search", "Dijkstra"],
-                        "Nodes Explored": [route_res['astar']['nodes_expanded'], route_res['dijkstra']['nodes_expanded']]
-                    }).set_index("Algorithm")
-                    st.bar_chart(chart_data, color="#0000FF")
-
-                    st.info(
-                        f"🎯 **Heuristic Admissibility Verified**: A* explored **{cmp.get('expansion_reduction_pct', 0)}% fewer nodes** "
-                        f"than Dijkstra while reaching the exact same optimal distance ({route_res['distance_km']} km)."
-                    )
+                st.success(f"🏁 Arrived at **{safe_ename}** ({route_res['distance_km']} km)")
+                st.info(f"⚡ A* Search: **{route_res['astar']['nodes_expanded']} nodes expanded** in {route_res['astar']['execution_time_ms']:.2f} ms")
 
     else:
-        # Initial live map showing the pins in real-time
-        st.markdown("<div class='card-label'>🗺️ Live Google Map / CARTO Layer — Previewing Start & Destination Locations</div>", unsafe_allow_html=True)
+        st.markdown("<div class='card-label'>🗺️ Live Map Preview</div>", unsafe_allow_html=True)
         if sp and ep:
             mid_lat = (sp["lat"] + ep["lat"]) / 2.0
             mid_lon = (sp["lon"] + ep["lon"]) / 2.0
-            live_map = create_base_map(
-                location=[mid_lat, mid_lon],
-                zoom_start=9,
-                prefer_canvas=True
-            )
+            live_map = create_base_map(location=[mid_lat, mid_lon], zoom_start=9)
             live_map.fit_bounds([[min(sp["lat"], ep["lat"]), min(sp["lon"], ep["lon"])], [max(sp["lat"], ep["lat"]), max(sp["lon"], ep["lon"])]], padding=[50, 50])
 
             folium.Marker(
                 [sp["lat"], sp["lon"]],
-                popup=folium.Popup(f"<b>🚩 Start:</b> {sp.get('short_name','')}", max_width=200),
-                tooltip=f"Start: {sp.get('short_name','')}",
+                popup=folium.Popup(f"<b>🚩 Start:</b> {html.escape(sp.get('short_name',''))}", max_width=200),
+                tooltip="🚩 Start Pin (Draggable)",
+                draggable=True,
                 icon=folium.Icon(color="green", icon="play", prefix="fa")
             ).add_to(live_map)
 
             folium.Marker(
                 [ep["lat"], ep["lon"]],
-                popup=folium.Popup(f"<b>🎯 Destination:</b> {ep.get('short_name','')}", max_width=200),
-                tooltip=f"Destination: {ep.get('short_name','')}",
+                popup=folium.Popup(f"<b>🎯 Destination:</b> {html.escape(ep.get('short_name',''))}", max_width=200),
+                tooltip="🎯 Destination Pin (Draggable)",
+                draggable=True,
                 icon=folium.Icon(color="red", icon="flag", prefix="fa")
             ).add_to(live_map)
 
-            components.html(live_map._repr_html_(), height=500)
-        else:
-            default_map = create_base_map(
-                location=[13.6281, 78.5015],
-                zoom_start=10
-            )
-            components.html(default_map._repr_html_(), height=500)
+            components.html(live_map._repr_html_(), height=460)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -789,9 +838,14 @@ if st.session_state.app_mode == "realworld":
 # ══════════════════════════════════════════════════════════════
 else:
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
-    st.markdown("<div class='card-label'>🏫 Inside-Campus Landmark Route Selector</div>", unsafe_allow_html=True)
+    st.markdown("<div class='card-label'>🏫 Inside-Campus Landmark Route Selector (All 17 Blocks)</div>", unsafe_allow_html=True)
 
     c1, c_swap, c2 = st.columns([10, 1, 10])
+
+    def swap_campus():
+        st.session_state.campus_start_id, st.session_state.campus_goal_id = (
+            st.session_state.campus_goal_id, st.session_state.campus_start_id
+        )
 
     with c1:
         s_idx = campus_ids.index(st.session_state.campus_start_id) if st.session_state.campus_start_id in campus_ids else 0
@@ -808,14 +862,10 @@ else:
 
     with c_swap:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        if st.button("⇄", help="Swap Campus Start & Destination", use_container_width=True):
-            st.session_state.campus_start_id, st.session_state.campus_goal_id = (
-                st.session_state.campus_goal_id, st.session_state.campus_start_id
-            )
-            st.rerun()
+        st.button("⇄", help="Swap Campus Start & Destination", use_container_width=True, on_click=swap_campus)
 
     with c2:
-        default_g_idx = campus_ids.index("ADMIN_COURTYARD") if "ADMIN_COURTYARD" in campus_ids else 0
+        default_g_idx = campus_ids.index("ADMIN_BLOCK") if "ADMIN_BLOCK" in campus_ids else 0
         g_idx = campus_ids.index(st.session_state.campus_goal_id) if st.session_state.campus_goal_id in campus_ids else default_g_idx
         new_goal = st.selectbox(
             "🎯 Destination Landmark",
@@ -841,14 +891,10 @@ else:
             st.session_state.campus_goal_id,
             mode=campus_walk_mode,
             avoid_stairs=avoid_stairs,
-            wheelchair_friendly=wheelchair_accessible,
-            include_benchmark=True
+            wheelchair_friendly=wheelchair_accessible
         )
 
         if c_res["status"] == "SUCCESS":
-            cmp = c_res.get("comparison") or {}
-
-            # Metrics
             st.markdown(f"""
             <div class="metric-row">
               <div class="metric-box">
@@ -864,12 +910,12 @@ else:
               <div class="metric-box">
                 <div class="metric-lbl">A* Nodes Expanded</div>
                 <div class="metric-val">{c_res['astar']['nodes_expanded']}</div>
-                <div class="metric-delta">{c_res['astar']['execution_time_ms']} ms</div>
+                <div class="metric-delta">{c_res['astar']['execution_time_ms']:.2f} ms</div>
               </div>
               <div class="metric-box">
-                <div class="metric-lbl">Search Space Reduction</div>
-                <div class="metric-val">{cmp.get('expansion_reduction_pct', 0)}%</div>
-                <div class="metric-delta">vs Dijkstra baseline</div>
+                <div class="metric-lbl">A* Execution Time</div>
+                <div class="metric-val">{c_res['astar'].get('execution_time_ms', 0):.2f} ms</div>
+                <div class="metric-delta">Informed Haversine search</div>
               </div>
             </div>
             """, unsafe_allow_html=True)
@@ -879,8 +925,10 @@ else:
             c_map_col, c_dir_col = st.columns([11, 7])
 
             with c_map_col:
+                safe_slm = html.escape(start_lm.get('name', 'Origin'))
+                safe_glm = html.escape(goal_lm.get('name', 'Destination'))
                 st.markdown(
-                    f"<div class='card-label'>🗺️ MITS Campus Map (Google / CARTO) — {start_lm.get('name','')} to {goal_lm.get('name','')}</div>",
+                    f"<div class='card-label'>🗺️ MITS Campus Map — {safe_slm} to {safe_glm}</div>",
                     unsafe_allow_html=True
                 )
                 coords = c_res["path_coordinates"]
@@ -894,34 +942,58 @@ else:
                 lm_lons = [lm["longitude"] for lm in campus_landmarks]
                 fmap.fit_bounds([[min(lm_lats), min(lm_lons)], [max(lm_lats), max(lm_lons)]], padding=[35, 35])
 
-                # Route line
+                # 1. Draw available alternative campus pathways in dashed grey
+                campus_alts = c_res.get("alternatives", [])
+                for i, alt in enumerate(campus_alts):
+                    folium.PolyLine(
+                        alt["coords"],
+                        color="#718096",
+                        weight=4,
+                        opacity=0.75,
+                        dash_array="6 8",
+                        tooltip=f"Alternative Pathway {i+1}: {alt['distance_m']:.1f} m"
+                    ).add_to(fmap)
+
+                # 2. Highlight SHORTEST campus path in vibrant GREEN (#00C853)
                 AntPath(
                     locations=coords,
-                    color=T["route_color"],
+                    color="#00C853",
+                    pulse_color="#B9F6CA",
                     weight=6,
-                    opacity=0.9,
+                    opacity=0.95,
                     delay=600,
                     dash_array=[15, 30],
-                    tooltip=f"Campus Shortest Path · {c_res['distance_meters']:.1f} m"
+                    tooltip=f"⚡ Campus Shortest Path: {c_res['distance_meters']:.1f} m"
                 ).add_to(fmap)
+
+                # Campus map legend
+                c_legend_html = f"""
+                <div style="position:fixed;bottom:25px;left:25px;z-index:9999;background:white;
+                            padding:10px 14px;border-radius:8px;border:1.5px solid #CBD5E0;
+                            box-shadow:0 4px 12px rgba(0,0,0,0.15);font-size:0.82rem;font-family:sans-serif;">
+                  <b style="color:#1A202C;">Campus Paths Legend</b><br>
+                  <span style="color:#00C853;font-size:1.2rem;font-weight:bold;">&#9644;&#9644;</span> <b style="color:#00C853;">Shortest Path (Green)</b><br>
+                  <span style="color:#718096;font-size:1.1rem;font-weight:bold;">- - -</span> <span style="color:#4A5568;">Alternative Pathways ({len(campus_alts)})</span>
+                </div>"""
+                fmap.get_root().html.add_child(folium.Element(c_legend_html))
 
                 # Start marker
                 folium.Marker(
                     coords[0],
-                    popup=folium.Popup(f"<b>🚩 Start:</b> {start_lm.get('name','')}", max_width=200),
-                    tooltip=f"Start: {start_lm.get('name','')}",
+                    popup=folium.Popup(f"<b>🚩 Start:</b> {safe_slm}", max_width=200),
+                    tooltip=f"Start: {safe_slm}",
                     icon=folium.Icon(color="green", icon="play", prefix="fa")
                 ).add_to(fmap)
 
                 # Goal marker
                 folium.Marker(
                     coords[-1],
-                    popup=folium.Popup(f"<b>🎯 Destination:</b> {goal_lm.get('name','')}", max_width=200),
-                    tooltip=f"Destination: {goal_lm.get('name','')}",
+                    popup=folium.Popup(f"<b>🎯 Destination:</b> {safe_glm}", max_width=200),
+                    tooltip=f"Destination: {safe_glm}",
                     icon=folium.Icon(color="red", icon="flag", prefix="fa")
                 ).add_to(fmap)
 
-                # Campus landmark markers
+                # Campus landmark markers for all 17 buildings
                 for lm in campus_landmarks:
                     if lm["landmark_id"] in (st.session_state.campus_start_id, st.session_state.campus_goal_id):
                         continue
@@ -931,7 +1003,7 @@ else:
                         color="#0000FF",
                         fill=True,
                         fill_opacity=0.75,
-                        popup=folium.Popup(f"<b>{lm['name']}</b><br><small>{lm.get('category','')}</small>", max_width=200),
+                        popup=folium.Popup(f"<b>{html.escape(lm['name'])}</b><br><small>{html.escape(lm.get('category',''))}</small>", max_width=200),
                         tooltip=lm["name"]
                     ).add_to(fmap)
 
@@ -939,15 +1011,20 @@ else:
 
             with c_dir_col:
                 st.markdown("<div class='card-label'>🚶 Turn-by-Turn Campus Path</div>", unsafe_allow_html=True)
+                if campus_alts:
+                    alt_info = "  |  ".join([f"Alt {i+1}: {a['distance_m']:.1f} m" for i, a in enumerate(campus_alts)])
+                    st.caption(f"🛤️ **{len(campus_alts)} alternative pathway(s) in dashed grey**  ·  {alt_info}")
                 with st.container(height=500):
                     for step in c_res["directions"]:
+                        safe_st = html.escape(step['street'])
+                        safe_to = html.escape(step['to_node'])
                         st.markdown(
                             f"<div class='step-card'>"
-                            f"<span class='step-text'>Step {step['step_number']} · {step['street']}</span>"
-                            f"<div class='step-subtext'>→ <b>{step['to_node']}</b> · {step['segment_meters']} m (Total: {step['cumulative_meters']} m)</div>"
+                            f"<span class='step-text'>Step {step['step_number']} · {safe_st}</span>"
+                            f"<div class='step-subtext'>→ <b>{safe_to}</b> · {step['segment_meters']} m (Cumulative: {step['cumulative_meters']} m)</div>"
                             f"</div>",
                             unsafe_allow_html=True
                         )
-                    st.success(f"🏁 Arrived at **{goal_lm.get('name', 'Destination')}**")
+                    st.success(f"🏁 Arrived at **{safe_glm}** ({c_res['distance_meters']:.1f} m)")
         else:
             st.error(f"❌ Route calculation failed: {c_res.get('error')}")

@@ -1,6 +1,6 @@
 """
 tracer.py - Records fine-grained search trace snapshots for the Educational Learning Mode.
-Captures frontier evolution, open/closed sets, and g(n), h(n), f(n) computations.
+Captures frontier evolution, open/closed sets, and g(n), h(n), f(n) computations for A*.
 """
 
 import heapq
@@ -12,11 +12,10 @@ from core.astar import haversine_distance
 def record_search_trace(
     graph,
     start_node: Any,
-    goal_node: Any,
-    algorithm: str = "A*"
+    goal_node: Any
 ) -> List[Dict[str, Any]]:
     """
-    Simulates A* or Dijkstra step-by-step and returns a timeline of trace snapshots.
+    Simulates A* step-by-step and returns a timeline of trace snapshots.
     Each snapshot records:
       - step: int
       - current_node: id
@@ -31,8 +30,6 @@ def record_search_trace(
         return []
 
     def h(u, v):
-        if algorithm == "Dijkstra":
-            return 0.0
         u_coord = (graph.nodes[u]['y'], graph.nodes[u]['x'])
         v_coord = (graph.nodes[v]['y'], graph.nodes[v]['x'])
         return haversine_distance(u_coord, v_coord)
@@ -58,10 +55,8 @@ def record_search_trace(
         "f_score": round(initial_h, 1),
         "frontier_count": len(frontier),
         "expanded_count": 0,
-        "frontier_nodes": [start_node],
-        "expanded_nodes": [],
         "event": "start",
-        "description": f"Initialized search queue at start node '{start_data.get('name', start_node)}' with f = {round(initial_h, 1)}m."
+        "description": f"Initialized search at {start_data.get('name', start_node)}. h={initial_h:.1f} m"
     })
 
     while frontier:
@@ -71,58 +66,52 @@ def record_search_trace(
         if current in closed_set:
             continue
 
-        curr_data = graph.nodes[current]
-        curr_g = g_score.get(current, 0.0)
-        curr_h = h(current, goal_node)
-        curr_f = curr_g + curr_h
+        c_data = graph.nodes[current]
+        g_c = g_score[current]
+        h_c = h(current, goal_node)
 
         if current == goal_node:
             trace_events.append({
                 "step": step_num,
                 "current_node": current,
-                "current_name": curr_data.get('name', f"Vertex {current}"),
-                "current_coord": [curr_data.get('y', 0.0), curr_data.get('x', 0.0)],
-                "g_score": round(curr_g, 1),
+                "current_name": c_data.get('name', f"Vertex {current}"),
+                "current_coord": [c_data.get('y', 0.0), c_data.get('x', 0.0)],
+                "g_score": round(g_c, 1),
                 "h_score": 0.0,
-                "f_score": round(curr_g, 1),
+                "f_score": round(g_c, 1),
                 "frontier_count": len(frontier),
                 "expanded_count": len(closed_set),
-                "frontier_nodes": [item[2] for item in frontier if item[2] not in closed_set],
-                "expanded_nodes": list(closed_set),
                 "event": "goal_reached",
-                "description": f"Target goal '{curr_data.get('name', current)}' popped from priority queue! Optimal cost: {round(curr_g, 1)}m."
+                "description": f"Goal node {c_data.get('name', current)} reached! Optimal path distance: {g_c:.1f} m"
             })
             break
 
         closed_set.add(current)
 
-        # Explore neighbors
         for neighbor in graph.neighbors(current):
             edge_data = graph.get_edge_data(current, neighbor, {})
-            cost = edge_data.get('length', 1.0)
-            tentative_g = curr_g + cost
+            edge_cost = edge_data.get('length', 1.0)
+            tentative_g = g_c + edge_cost
 
             if neighbor not in g_score or tentative_g < g_score[neighbor]:
                 g_score[neighbor] = tentative_g
-                neigh_h = h(neighbor, goal_node)
-                f_val = tentative_g + neigh_h
+                h_val = h(neighbor, goal_node)
+                f_val = tentative_g + h_val
                 came_from[neighbor] = current
                 heapq.heappush(frontier, (f_val, next(seq), neighbor))
 
         trace_events.append({
             "step": step_num,
             "current_node": current,
-            "current_name": curr_data.get('name', f"Vertex {current}"),
-            "current_coord": [curr_data.get('y', 0.0), curr_data.get('x', 0.0)],
-            "g_score": round(curr_g, 1),
-            "h_score": round(curr_h, 1),
-            "f_score": round(curr_f, 1),
+            "current_name": c_data.get('name', f"Vertex {current}"),
+            "current_coord": [c_data.get('y', 0.0), c_data.get('x', 0.0)],
+            "g_score": round(g_c, 1),
+            "h_score": round(h_c, 1),
+            "f_score": round(current_f, 1),
             "frontier_count": len(frontier),
             "expanded_count": len(closed_set),
-            "frontier_nodes": list(set([item[2] for item in frontier if item[2] not in closed_set])),
-            "expanded_nodes": list(closed_set),
             "event": "expand",
-            "description": f"Expanded '{curr_data.get('name', current)}' [g={round(curr_g, 1)}m, h={round(curr_h, 1)}m, f={round(curr_f, 1)}m]. Evaluated {len(list(graph.neighbors(current)))} outgoing paths."
+            "description": f"Expanded {c_data.get('name', current)}. Evaluated successors."
         })
 
     return trace_events
