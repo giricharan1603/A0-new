@@ -482,9 +482,9 @@ with st.sidebar:
     if st.session_state.app_mode == "realworld":
         t_mode = st.radio(
             "Vehicle / Travel Mode",
-            ["drive", "walk"],
+            ["drive", "bike"],
             index=0 if st.session_state.travel_mode == "drive" else 1,
-            format_func=lambda x: "🚗 Driving (Car / Bus)" if x == "drive" else "🚶 Walking"
+            format_func=lambda x: "🚗 Driving (Car / Bus)" if x == "drive" else "🏍️ Bike / Two-Wheeler"
         )
         if t_mode != st.session_state.travel_mode:
             st.session_state.travel_mode = t_mode
@@ -656,7 +656,7 @@ if st.session_state.app_mode == "realworld":
           <div class="metric-box">
             <div class="metric-lbl">Est. Travel Time</div>
             <div class="metric-val">{route_res['duration']}</div>
-            <div class="metric-delta">{'Driving pace' if st.session_state.travel_mode=='drive' else 'Walking pace'}</div>
+            <div class="metric-delta">{'Driving pace (Car/Bus)' if st.session_state.travel_mode=='drive' else 'Bike pace (~40 km/h)'}</div>
           </div>
           <div class="metric-box">
             <div class="metric-lbl">A* Nodes Expanded</div>

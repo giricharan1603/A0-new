@@ -17,8 +17,8 @@ from core.places_data import PLACES_DB, nearest_place, nearest_place_info
 CACHE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "graph_cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-WALK_SPEED_KMH  = 4.5
-DRIVE_SPEED_KMH = 50.0
+BIKE_SPEED_KMH  = 40.0   # Two-wheeler / motorcycle / bike highway pace
+DRIVE_SPEED_KMH = 50.0   # Car / Bus speed
 
 
 def _format_duration(hours: float) -> str:
@@ -264,7 +264,7 @@ def route_realworld(
 
     dist_m = corridor["distance_m"]
     dist_km = round(dist_m / 1000.0, 2)
-    speed_kmh = DRIVE_SPEED_KMH if travel_mode == "drive" else WALK_SPEED_KMH
+    speed_kmh = BIKE_SPEED_KMH if travel_mode == "bike" else DRIVE_SPEED_KMH
     duration_str = _format_duration(dist_km / speed_kmh)
 
     # Build turn-by-turn directions showing villages and cities bypassed
