@@ -181,14 +181,14 @@ else:
 st.markdown(f"""
 <style>
   /* Base App Background & Typography */
-  .stApp {
+  .stApp {{
     background-color: {T['bg']};
     color: {T['text']};
-  }
-  #MainMenu, footer { visibility: hidden; }
+  }}
+  #MainMenu, footer {{ visibility: hidden; }}
 
   /* Top Header Banner in Signature Blue #0000FF */
-  .top-banner {
+  .top-banner {{
     background: {T['header_grad']};
     border-radius: 14px;
     padding: 22px 30px;
@@ -198,21 +198,21 @@ st.markdown(f"""
     justify-content: space-between;
     align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.25);
-  }
-  .top-title {
+  }}
+  .top-title {{
     font-size: 1.9rem;
     font-weight: 800;
     color: #FFFFFF;
     margin: 0;
     line-height: 1.2;
     letter-spacing: -0.02em;
-  }
-  .top-sub {
+  }}
+  .top-sub {{
     font-size: 0.92rem;
     color: rgba(255, 255, 255, 0.92);
     margin: 5px 0 0 0;
-  }
-  .badge-tag {
+  }}
+  .badge-tag {{
     display: inline-block;
     background: rgba(255, 255, 255, 0.18);
     border: 1px solid rgba(255, 255, 255, 0.35);
@@ -223,39 +223,39 @@ st.markdown(f"""
     font-weight: 600;
     margin-right: 6px;
     margin-top: 10px;
-  }
+  }}
 
   /* Buttons & Interactions in Pure Blue #0000FF & White */
-  .stButton > button {
+  .stButton > button {{
     border-radius: 8px !important;
     font-weight: 700 !important;
     transition: all 0.2s ease !important;
-  }
-  .stButton > button[kind="primary"] {
+  }}
+  .stButton > button[kind="primary"] {{
     background-color: #0000FF !important;
     color: #FFFFFF !important;
     border: 1.5px solid #0000FF !important;
     box-shadow: 0 4px 14px rgba(0, 0, 255, 0.28) !important;
-  }
-  .stButton > button[kind="primary"]:hover {
+  }}
+  .stButton > button[kind="primary"]:hover {{
     background-color: #0000CC !important;
     border-color: #0000CC !important;
     box-shadow: 0 6px 18px rgba(0, 0, 255, 0.40) !important;
     color: #FFFFFF !important;
-  }
-  .stButton > button[kind="secondary"] {
+  }}
+  .stButton > button[kind="secondary"] {{
     background-color: #FFFFFF !important;
     color: #0000FF !important;
     border: 1.5px solid #0000FF !important;
-  }
-  .stButton > button[kind="secondary"]:hover {
+  }}
+  .stButton > button[kind="secondary"]:hover {{
     background-color: #F0F4FF !important;
     color: #0000CC !important;
     border-color: #0000CC !important;
-  }
+  }}
 
   /* Mode Switch Button */
-  .mode-switch-btn {
+  .mode-switch-btn {{
     background: #FFFFFF !important;
     color: #0000FF !important;
     font-weight: 800 !important;
@@ -263,40 +263,40 @@ st.markdown(f"""
     padding: 10px 18px !important;
     border: 2px solid #FFFFFF !important;
     box-shadow: 0 4px 14px rgba(0, 0, 255, 0.20) !important;
-  }
+  }}
 
   /* Sidebar Styling */
-  section[data-testid="stSidebar"] {
+  section[data-testid="stSidebar"] {{
     background-color: #FFFFFF !important;
     border-right: 1.5px solid #D5E0FF !important;
-  }
+  }}
 
   /* Cards in White with Blue Border */
-  .custom-card {
+  .custom-card {{
     background: {T['card']};
     border: 1.5px solid {T['card_border']};
     border-radius: 14px;
     padding: 20px 24px;
     margin-bottom: 18px;
     box-shadow: 0 4px 18px rgba(0, 0, 255, 0.05);
-  }
-  .card-label {
+  }}
+  .card-label {{
     font-size: 0.78rem;
     font-weight: 800;
     color: #0000FF;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     margin-bottom: 10px;
-  }
+  }}
 
   /* Metric Tiles */
-  .metric-row {
+  .metric-row {{
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 14px;
     margin: 16px 0;
-  }
-  .metric-box {
+  }}
+  .metric-box {{
     background: {T['metric_bg']};
     border: 1.5px solid {T['metric_border']};
     border-top: 4px solid #0000FF;
@@ -304,29 +304,29 @@ st.markdown(f"""
     padding: 16px 18px;
     text-align: center;
     box-shadow: 0 4px 16px rgba(0, 0, 255, 0.06);
-  }
-  .metric-val {
+  }}
+  .metric-val {{
     font-size: 1.6rem;
     font-weight: 800;
     color: #0000FF;
     margin: 4px 0 2px 0;
-  }
-  .metric-lbl {
+  }}
+  .metric-lbl {{
     font-size: 0.74rem;
     font-weight: 700;
     color: #4A5568;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-  }
-  .metric-delta {
+  }}
+  .metric-delta {{
     font-size: 0.74rem;
     font-weight: 700;
     color: #0000FF;
     margin-top: 3px;
-  }
+  }}
 
   /* Turn-by-Turn Navigation Step Cards */
-  .step-card {
+  .step-card {{
     background: {T['step_bg']};
     border: 1px solid #D5E0FF;
     border-left: 5px solid #0000FF;
@@ -334,20 +334,20 @@ st.markdown(f"""
     margin-bottom: 10px;
     border-radius: 0 8px 8px 0;
     box-shadow: 0 2px 8px rgba(0, 0, 255, 0.03);
-  }
-  .step-text {
+  }}
+  .step-text {{
     font-weight: 700;
     color: #0A0E27;
     font-size: 0.88rem;
-  }
-  .step-subtext {
+  }}
+  .step-subtext {{
     color: #4B5563;
     font-size: 0.78rem;
     margin-top: 2px;
-  }
+  }}
   
   /* Suggestion Pills */
-  .suggestion-pill {
+  .suggestion-pill {{
     display: inline-block;
     background: #FFFFFF;
     border: 1.5px solid #C7D7FE;
@@ -359,12 +359,12 @@ st.markdown(f"""
     margin: 2px 4px 4px 0;
     cursor: pointer;
     transition: all 0.15s ease;
-  }
-  .suggestion-pill:hover {
+  }}
+  .suggestion-pill:hover {{
     background: #0000FF;
     color: #FFFFFF;
     border-color: #0000FF;
-  }
+  }}
 </style>
 """, unsafe_allow_html=True)
 
