@@ -36,11 +36,11 @@ def create_mits_synthetic_campus_graph() -> nx.DiGraph:
         "J_CENTRAL":           {"y": 13.62850, "x": 78.47710, "name": "Central Boulevard Junction"},
         # South Campus & Academic Buildings
         "PLACEMENT_OFFICE":    {"y": 13.62774, "x": 78.47649, "name": "Placement Office Block Entrance"},
-        "ADMIN_COURTYARD":     {"y": 13.62719, "x": 78.47656, "name": "Main Internal Courtyard & Block Core"},
-        "GYM_UPPER":           {"y": 13.62778, "x": 78.47545, "name": "MITS Gym & Sports Room (Upper section)"},
-        "GYM_MAIN":            {"y": 13.62725, "x": 78.47547, "name": "MITS Gym and Sports Room (Main facility)"},
-        "SW_ACADEMIC_BLOCK":   {"y": 13.62657, "x": 78.47546, "name": "Southwestern Academic Block Corner"},
-        "BOTTOM_WALKWAY":      {"y": 13.62678, "x": 78.47639, "name": "Bottom Center Walkway"},
+        "ADMIN_COURTYARD":     {"y": 13.62719, "x": 78.47656, "name": "Madanapalle Institute of Technology & Sciences (Main Core)"},
+        "GYM_UPPER":           {"y": 13.62778, "x": 78.47545, "name": "Annapurna & KK Blocks (Sports Annex Upper)"},
+        "GYM_MAIN":            {"y": 13.62725, "x": 78.47547, "name": "MITS Gym & Indoor Sports Complex"},
+        "SW_ACADEMIC_BLOCK":   {"y": 13.62657, "x": 78.47546, "name": "Research Block & South-West Labs"},
+        "BOTTOM_WALKWAY":      {"y": 13.62678, "x": 78.47639, "name": "Library Promenade & Southern Walkway"},
         "AUDITORIUM_ENTRANCE": {"y": 13.62656, "x": 78.47697, "name": "Auditorium & Seminar Halls Entrance"},
     }
 

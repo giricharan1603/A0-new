@@ -32,6 +32,30 @@
     "description": "Large central athletic sports and event ground."
   },
   {
+    "landmark_id": "GYM_UPPER",
+    "name": "Annapurna & KK Blocks (Sports Annex Upper)",
+    "latitude": 13.62778,
+    "longitude": 78.47545,
+    "category": "Academic",
+    "description": "Upper academic wings and sports annex facility."
+  },
+  {
+    "landmark_id": "GYM_MAIN",
+    "name": "MITS Gym & Indoor Sports Complex",
+    "latitude": 13.62725,
+    "longitude": 78.47547,
+    "category": "Sports",
+    "description": "Primary fitness gymnasium and indoor games hall."
+  },
+  {
+    "landmark_id": "SW_ACADEMIC_BLOCK",
+    "name": "Research Block & South-West Labs",
+    "latitude": 13.62657,
+    "longitude": 78.47546,
+    "category": "Academic",
+    "description": "Southwestern academic classrooms, laboratories, and research block."
+  },
+  {
     "landmark_id": "PLACEMENT_OFFICE",
     "name": "Placement Office Block Entrance",
     "latitude": 13.62774,
@@ -41,39 +65,15 @@
   },
   {
     "landmark_id": "ADMIN_COURTYARD",
-    "name": "Main Internal Courtyard & Block Core",
+    "name": "Madanapalle Institute of Technology & Sciences (Main Core)",
     "latitude": 13.62719,
     "longitude": 78.47656,
-    "category": "Administration",
+    "category": "Academic Core",
     "description": "Central academic block core, circular block, and administrative courtyard."
   },
   {
-    "landmark_id": "GYM_UPPER",
-    "name": "MITS Gym & Sports Room (Upper Section)",
-    "latitude": 13.62778,
-    "longitude": 78.47545,
-    "category": "Sports",
-    "description": "Upper sports annex and recreation facility."
-  },
-  {
-    "landmark_id": "GYM_MAIN",
-    "name": "MITS Gym and Sports Room (Main Facility)",
-    "latitude": 13.62725,
-    "longitude": 78.47547,
-    "category": "Sports",
-    "description": "Primary fitness gymnasium and indoor games hall."
-  },
-  {
-    "landmark_id": "SW_ACADEMIC_BLOCK",
-    "name": "Southwestern Academic Block Corner",
-    "latitude": 13.62657,
-    "longitude": 78.47546,
-    "category": "Academic",
-    "description": "Southwestern academic classrooms, laboratories, and research block."
-  },
-  {
     "landmark_id": "BOTTOM_WALKWAY",
-    "name": "Bottom Center Walkway",
+    "name": "Library Promenade & Southern Walkway",
     "latitude": 13.62678,
     "longitude": 78.47639,
     "category": "Academic",

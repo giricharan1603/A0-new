@@ -111,7 +111,7 @@ def create_base_map(location, zoom_start=11, prefer_canvas=True) -> folium.Map:
 if "app_mode" not in st.session_state:
     st.session_state.app_mode = "campus"  # 'realworld' or 'campus'
 if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = True
+    st.session_state.dark_mode = False
 if "real_start_text" not in st.session_state:
     st.session_state.real_start_text = "Madanapalle"
 if "real_end_text" not in st.session_state:
@@ -156,21 +156,21 @@ if st.session_state.dark_mode:
 else:
     T = {
         "bg": "#F8FAFC",
-        "card": "rgba(255, 255, 255, 0.95)",
+        "card": "#FFFFFF",
         "card_border": "#E2E8F0",
         "text": "#0F172A",
-        "muted": "#64748B",
-        "accent": "#0284C7",
-        "accent_purple": "#6366F1",
+        "muted": "#475569",
+        "accent": "#1D4ED8",
+        "accent_purple": "#2563EB",
         "green": "#16A34A",
         "red": "#DC2626",
         "input_bg": "#FFFFFF",
         "input_border": "#CBD5E1",
-        "step_bg": "#F0FDF4",
-        "step_border": "#16A34A",
-        "metric_bg": "rgba(255, 255, 255, 0.95)",
-        "metric_border": "#E2E8F0",
-        "header_grad": "linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #4F46E5 100%)",
+        "step_bg": "#F0F7FF",
+        "step_border": "#2563EB",
+        "metric_bg": "#FFFFFF",
+        "metric_border": "#BFDBFE",
+        "header_grad": "linear-gradient(135deg, #0A2540 0%, #1E3A8A 55%, #2563EB 100%)",
         "map_tile": CARTO_LIGHT_TILES,
         "route_color": "#2563EB",
     }
@@ -762,7 +762,8 @@ else:
             st.rerun()
 
     with c2:
-        g_idx = campus_ids.index(st.session_state.campus_goal_id) if st.session_state.campus_goal_id in campus_ids else 3
+        default_g_idx = campus_ids.index("ADMIN_COURTYARD") if "ADMIN_COURTYARD" in campus_ids else 0
+        g_idx = campus_ids.index(st.session_state.campus_goal_id) if st.session_state.campus_goal_id in campus_ids else default_g_idx
         new_goal = st.selectbox(
             "🎯 Destination Landmark",
             campus_ids,
