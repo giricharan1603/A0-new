@@ -134,45 +134,45 @@ if "campus_goal_id" not in st.session_state:
 # ─────────────────────────────────────────────────────────────
 if st.session_state.dark_mode:
     T = {
-        "bg": "#0B1120",
-        "card": "rgba(15, 23, 42, 0.90)",
-        "card_border": "#1E3A5F",
-        "text": "#F1F5F9",
-        "muted": "#94A3B8",
-        "accent": "#38BDF8",
-        "accent_purple": "#818CF8",
-        "green": "#22C55E",
-        "red": "#EF4444",
-        "input_bg": "#0F1A2E",
-        "input_border": "#1E3A5F",
-        "step_bg": "#0D2615",
-        "step_border": "#22C55E",
-        "metric_bg": "rgba(30, 41, 59, 0.90)",
-        "metric_border": "#334155",
-        "header_grad": "linear-gradient(135deg, #0B192C 0%, #1E3E62 50%, #000000 100%)",
+        "bg": "#050B1E",
+        "card": "rgba(10, 18, 48, 0.96)",
+        "card_border": "#0000FF",
+        "text": "#FFFFFF",
+        "muted": "#9BB2FF",
+        "accent": "#3366FF",
+        "accent_purple": "#668CFF",
+        "green": "#00E676",
+        "red": "#FF3B30",
+        "input_bg": "#0D183D",
+        "input_border": "#0000FF",
+        "step_bg": "#0B1536",
+        "step_border": "#0000FF",
+        "metric_bg": "rgba(10, 18, 48, 0.96)",
+        "metric_border": "#0000FF",
+        "header_grad": "linear-gradient(135deg, #0000FF 0%, #0012A3 60%, #050A30 100%)",
         "map_tile": CARTO_DARK_TILES,
-        "route_color": "#38BDF8",
+        "route_color": "#3366FF",
     }
 else:
     T = {
-        "bg": "#F8FAFC",
+        "bg": "#F5F8FF",
         "card": "#FFFFFF",
-        "card_border": "#E2E8F0",
-        "text": "#0F172A",
-        "muted": "#475569",
-        "accent": "#1D4ED8",
-        "accent_purple": "#2563EB",
-        "green": "#16A34A",
-        "red": "#DC2626",
+        "card_border": "#D5E0FF",
+        "text": "#0A0E27",
+        "muted": "#4A5568",
+        "accent": "#0000FF",
+        "accent_purple": "#0000FF",
+        "green": "#00A854",
+        "red": "#E02020",
         "input_bg": "#FFFFFF",
-        "input_border": "#CBD5E1",
-        "step_bg": "#F0F7FF",
-        "step_border": "#2563EB",
+        "input_border": "#C7D7FE",
+        "step_bg": "#F0F4FF",
+        "step_border": "#0000FF",
         "metric_bg": "#FFFFFF",
-        "metric_border": "#BFDBFE",
-        "header_grad": "linear-gradient(135deg, #0A2540 0%, #1E3A8A 55%, #2563EB 100%)",
+        "metric_border": "#D5E0FF",
+        "header_grad": "linear-gradient(135deg, #0000FF 0%, #0018D4 50%, #0000CC 100%)",
         "map_tile": CARTO_LIGHT_TILES,
-        "route_color": "#2563EB",
+        "route_color": "#0000FF",
     }
 
 # ─────────────────────────────────────────────────────────────
@@ -180,138 +180,191 @@ else:
 # ─────────────────────────────────────────────────────────────
 st.markdown(f"""
 <style>
-  .stApp {{
+  /* Base App Background & Typography */
+  .stApp {
     background-color: {T['bg']};
-  }}
-  #MainMenu, footer {{ visibility: hidden; }}
+    color: {T['text']};
+  }
+  #MainMenu, footer { visibility: hidden; }
 
-  /* Top Header Banner */
-  .top-banner {{
+  /* Top Header Banner in Signature Blue #0000FF */
+  .top-banner {
     background: {T['header_grad']};
     border-radius: 14px;
-    padding: 20px 28px;
+    padding: 22px 30px;
     margin-bottom: 20px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    box-shadow: 0 8px 26px rgba(0, 0, 255, 0.22);
     display: flex;
     justify-content: space-between;
     align-items: center;
-  }}
-  .top-title {{
-    font-size: 1.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+  .top-title {
+    font-size: 1.9rem;
     font-weight: 800;
     color: #FFFFFF;
     margin: 0;
     line-height: 1.2;
-  }}
-  .top-sub {{
-    font-size: 0.9rem;
-    color: rgba(255,255,255,0.85);
-    margin: 4px 0 0 0;
-  }}
-  .badge-tag {{
+    letter-spacing: -0.02em;
+  }
+  .top-sub {
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 5px 0 0 0;
+  }
+  .badge-tag {
     display: inline-block;
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 14px;
-    padding: 3px 10px;
-    font-size: 0.75rem;
+    padding: 4px 12px;
+    font-size: 0.76rem;
     color: #FFFFFF;
+    font-weight: 600;
     margin-right: 6px;
-    margin-top: 8px;
-  }}
+    margin-top: 10px;
+  }
+
+  /* Buttons & Interactions in Pure Blue #0000FF & White */
+  .stButton > button {
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease !important;
+  }
+  .stButton > button[kind="primary"] {
+    background-color: #0000FF !important;
+    color: #FFFFFF !important;
+    border: 1.5px solid #0000FF !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 255, 0.28) !important;
+  }
+  .stButton > button[kind="primary"]:hover {
+    background-color: #0000CC !important;
+    border-color: #0000CC !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 255, 0.40) !important;
+    color: #FFFFFF !important;
+  }
+  .stButton > button[kind="secondary"] {
+    background-color: #FFFFFF !important;
+    color: #0000FF !important;
+    border: 1.5px solid #0000FF !important;
+  }
+  .stButton > button[kind="secondary"]:hover {
+    background-color: #F0F4FF !important;
+    color: #0000CC !important;
+    border-color: #0000CC !important;
+  }
 
   /* Mode Switch Button */
-  .mode-switch-btn {{
+  .mode-switch-btn {
     background: #FFFFFF !important;
-    color: #1E3A8A !important;
-    font-weight: 700 !important;
+    color: #0000FF !important;
+    font-weight: 800 !important;
     border-radius: 8px !important;
-    padding: 8px 16px !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-  }}
+    padding: 10px 18px !important;
+    border: 2px solid #FFFFFF !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 255, 0.20) !important;
+  }
 
-  /* Cards */
-  .custom-card {{
+  /* Sidebar Styling */
+  section[data-testid="stSidebar"] {
+    background-color: #FFFFFF !important;
+    border-right: 1.5px solid #D5E0FF !important;
+  }
+
+  /* Cards in White with Blue Border */
+  .custom-card {
     background: {T['card']};
-    border: 1px solid {T['card_border']};
+    border: 1.5px solid {T['card_border']};
     border-radius: 14px;
-    padding: 18px 22px;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-  }}
-  .card-label {{
-    font-size: 0.76rem;
-    font-weight: 700;
-    color: {T['muted']};
-    letter-spacing: 0.05em;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 18px rgba(0, 0, 255, 0.05);
+  }
+  .card-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #0000FF;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    margin-bottom: 8px;
-  }}
+    margin-bottom: 10px;
+  }
 
-  /* Metrics Grid */
-  .metric-row {{
+  /* Metric Tiles */
+  .metric-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin: 14px 0;
-  }}
-  .metric-box {{
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .metric-box {
     background: {T['metric_bg']};
-    border: 1px solid {T['metric_border']};
+    border: 1.5px solid {T['metric_border']};
+    border-top: 4px solid #0000FF;
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 16px 18px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }}
-  .metric-val {{
-    font-size: 1.45rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 255, 0.06);
+  }
+  .metric-val {
+    font-size: 1.6rem;
     font-weight: 800;
-    color: {T['accent']};
+    color: #0000FF;
     margin: 4px 0 2px 0;
-  }}
-  .metric-lbl {{
-    font-size: 0.76rem;
-    font-weight: 600;
-    color: {T['muted']};
-  }}
-  .metric-delta {{
-    font-size: 0.72rem;
+  }
+  .metric-lbl {
+    font-size: 0.74rem;
     font-weight: 700;
-    color: {T['green']};
+    color: #4A5568;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .metric-delta {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #0000FF;
     margin-top: 3px;
-  }}
+  }
 
-  /* Step Direction Box */
-  .step-card {{
+  /* Turn-by-Turn Navigation Step Cards */
+  .step-card {
     background: {T['step_bg']};
-    border-left: 4px solid {T['step_border']};
-    padding: 10px 14px;
-    margin-bottom: 8px;
+    border: 1px solid #D5E0FF;
+    border-left: 5px solid #0000FF;
+    padding: 12px 16px;
+    margin-bottom: 10px;
     border-radius: 0 8px 8px 0;
-  }}
-  .step-text {{
+    box-shadow: 0 2px 8px rgba(0, 0, 255, 0.03);
+  }
+  .step-text {
     font-weight: 700;
-    color: {T['text']};
+    color: #0A0E27;
     font-size: 0.88rem;
-  }}
-  .step-subtext {{
-    color: {T['muted']};
+  }
+  .step-subtext {
+    color: #4B5563;
     font-size: 0.78rem;
     margin-top: 2px;
-  }}
+  }
   
-  .suggestion-pill {{
+  /* Suggestion Pills */
+  .suggestion-pill {
     display: inline-block;
-    background: {T['input_bg']};
-    border: 1px solid {T['card_border']};
+    background: #FFFFFF;
+    border: 1.5px solid #C7D7FE;
     border-radius: 6px;
-    padding: 4px 10px;
+    padding: 4px 12px;
     font-size: 0.78rem;
-    color: {T['text']};
+    color: #0000FF;
+    font-weight: 600;
     margin: 2px 4px 4px 0;
     cursor: pointer;
-  }}
+    transition: all 0.15s ease;
+  }
+  .suggestion-pill:hover {
+    background: #0000FF;
+    color: #FFFFFF;
+    border-color: #0000FF;
+  }
 </style>
 """, unsafe_allow_html=True)
 
@@ -688,7 +741,7 @@ if st.session_state.app_mode == "realworld":
                         "Algorithm": ["A* Search", "Dijkstra"],
                         "Nodes Explored": [route_res['astar']['nodes_expanded'], route_res['dijkstra']['nodes_expanded']]
                     }).set_index("Algorithm")
-                    st.bar_chart(chart_data)
+                    st.bar_chart(chart_data, color="#0000FF")
 
                     st.info(
                         f"🎯 **Heuristic Admissibility Verified**: A* explored **{cmp.get('expansion_reduction_pct', 0)}% fewer nodes** "
@@ -875,7 +928,7 @@ else:
                     folium.CircleMarker(
                         location=[lm["latitude"], lm["longitude"]],
                         radius=6,
-                        color="#2563EB",
+                        color="#0000FF",
                         fill=True,
                         fill_opacity=0.75,
                         popup=folium.Popup(f"<b>{lm['name']}</b><br><small>{lm.get('category','')}</small>", max_width=200),
